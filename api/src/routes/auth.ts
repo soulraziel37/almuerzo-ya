@@ -3,7 +3,9 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import type { User } from '../generated/prisma/client';
 import { signSession } from '../lib/auth';
+import { demoGate } from '../lib/demo-gate';
 import { AppError } from '../lib/errors';
+import { authLimit } from '../lib/security';
 import type { ServerDeps } from '../server';
 
 // Se compara contra esto cuando el ID no existe, para responder en un tiempo parecido.
@@ -15,12 +17,16 @@ export function authRoutes(app: FastifyInstance, { prisma, config }: ServerDeps)
     user: { id: user.id, name: user.name, email: user.email, role: user.role },
   });
 
+  const gate = demoGate(config.DEMO_ACCESS_CODE);
+  const limit = authLimit(config);
+
   const requireMock = () => {
     if (config.AUTH_MODE !== 'mock') throw new AppError(404, 'not_found', 'No disponible.');
   };
 
-  app.get('/auth/mock/users', async () => {
+  app.get('/auth/mock/users', limit, async (request) => {
     requireMock();
+    gate(request);
     return prisma.user.findMany({
       where: { role: 'student' },
       select: { id: true, name: true, email: true },
@@ -28,15 +34,17 @@ export function authRoutes(app: FastifyInstance, { prisma, config }: ServerDeps)
     });
   });
 
-  app.post('/auth/mock/login', async (request) => {
+  app.post('/auth/mock/login', limit, async (request) => {
     requireMock();
+    gate(request);
     const { userId } = z.object({ userId: z.uuid() }).parse(request.body);
     const user = await prisma.user.findFirst({ where: { id: userId, role: 'student' } });
     if (!user) throw new AppError(401, 'invalid_user', 'Ese usuario de prueba no existe.');
     return sessionFor(user);
   });
 
-  app.post('/auth/operator/login', async (request) => {
+  app.post('/auth/operator/login', limit, async (request) => {
+    gate(request);
     const { loginId, password } = z
       .object({ loginId: z.string().trim().min(1).max(40), password: z.string().min(1).max(100) })
       .parse(request.body);

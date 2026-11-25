@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { AppError } from './errors';
@@ -14,6 +14,18 @@ export async function savePhoto(directory: string, base64: string): Promise<stri
     throw new AppError(400, 'invalid_photo', 'La foto debe ser JPEG de hasta 2 MB.');
   }
   const name = `${randomUUID()}.jpg`;
+  await mkdir(directory, { recursive: true });
+  await writeFile(path.join(directory, name), data);
+  return `/uploads/${name}`;
+}
+
+/**
+ * Publica una foto incluida en el repositorio. El nombre sale del contenido, así que
+ * repetirlo no acumula copias y la restaura si el disco se vació.
+ */
+export async function publishPhoto(directory: string, data: Buffer): Promise<string> {
+  const hex = createHash('sha256').update(data).digest('hex');
+  const name = `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 32)}.jpg`;
   await mkdir(directory, { recursive: true });
   await writeFile(path.join(directory, name), data);
   return `/uploads/${name}`;

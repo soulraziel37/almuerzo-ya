@@ -9,7 +9,11 @@ import { expireOrders } from '../src/services/orders';
 import { TEST_DATABASE_URL } from './test-db';
 
 const prisma = createPrisma(TEST_DATABASE_URL);
-const config = loadConfig({ JWT_SECRET: 'secreto-de-prueba', QR_SECRET: 'qr-de-prueba' });
+const config = loadConfig({ JWT_SECRET: 'secreto-de-prueba', QR_SECRET: 'qr-de-prueba',
+  // Los tests hacen muchos ingresos desde la misma dirección.
+  AUTH_RATE_LIMIT_PER_MINUTE: '10000',
+  RATE_LIMIT_PER_MINUTE: '10000',
+});
 const DATE = '2026-11-24';
 
 let clock = atLocalTime(DATE, '10:00');

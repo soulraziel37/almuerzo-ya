@@ -1,9 +1,9 @@
-import cors from '@fastify/cors';
 import Fastify, { type FastifyError, type FastifyServerOptions } from 'fastify';
 import { ZodError } from 'zod';
 import type { Config } from './config';
 import type { PrismaClient } from './generated/prisma/client';
 import { AppError } from './lib/errors';
+import { registerSecurity } from './lib/security';
 import { authRoutes } from './routes/auth';
 import { healthRoutes } from './routes/health';
 import { operatorRoutes } from './routes/operator';
@@ -20,9 +20,9 @@ export interface ServerDeps {
 }
 
 export async function buildServer(deps: ServerDeps, options: FastifyServerOptions = {}) {
-  const app = Fastify(options);
-  // Prototipo en red local: la vista web de Expo llama desde otro puerto.
-  await app.register(cors, { origin: true, methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH'] });
+  // Cuerpos pequeños por defecto; solo las rutas con foto aceptan más.
+  const app = Fastify({ bodyLimit: 32 * 1024, ...options });
+  await registerSecurity(app, deps.config);
 
   app.setErrorHandler((error: FastifyError, request, reply) => {
     if (error instanceof AppError) {

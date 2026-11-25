@@ -5,6 +5,7 @@ import { useEffect, useRef } from 'react';
 import { useColorScheme } from 'react-native';
 
 import { useAppFocus } from '@/lib/useAppFocus';
+import { useDemo } from '@/store/demo';
 import { useSession } from '@/store/session';
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1 } } });
@@ -17,6 +18,7 @@ export default function RootLayout() {
   const role = useSession((s) => s.session?.user.role);
 
   useEffect(() => {
+    void useDemo.getState().hydrate();
     void useSession.getState().hydrate();
   }, []);
 

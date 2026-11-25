@@ -104,6 +104,15 @@ Opciones:
 - Respeta "Reducir transparencia"; etiquetas y avisos para VoiceOver.
 - El stock y los contadores se actualizan cada 5 s, solo con la app en primer plano.
 
+## Seguridad de la API
+
+- Límite por IP: 300 peticiones por minuto y 20 en las rutas de ingreso
+  (`RATE_LIMIT_PER_MINUTE`, `AUTH_RATE_LIMIT_PER_MINUTE`).
+- Cabeceras de seguridad (Helmet), cuerpos de hasta 32 KB (3 MB al subir fotos) y
+  `CORS_ORIGINS` para limitar los orígenes web.
+- Publicada: exige clave de demo, clave de operador y secretos largos; si faltan no arranca.
+- Para compartirla fuera de tu red: [docs/PUBLICAR.md](docs/PUBLICAR.md).
+
 ## Tests y tipos
 
 Los tests de la API usan la base `almuerzo_test`: levantar antes `docker compose up -d db`.

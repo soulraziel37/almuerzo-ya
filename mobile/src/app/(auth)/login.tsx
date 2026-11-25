@@ -3,7 +3,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, Text, TextInput } from 'react-native';
 
-import { api } from '@/api/client';
+import { api, ApiError } from '@/api/client';
 import { useMockUsers } from '@/api/queries';
 import type { Session } from '@/api/types';
 import { GroupedList, ListRow } from '@/components/GroupedList';
@@ -11,6 +11,7 @@ import { Notice } from '@/components/Notice';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { Segmented } from '@/components/Segmented';
+import { useDemo } from '@/store/demo';
 import { useSession } from '@/store/session';
 import { colors, size, spacing, type } from '@/theme/tokens';
 
@@ -30,6 +31,31 @@ export default function Login() {
         Ver componentes
       </Text>
     </Screen>
+  );
+}
+
+/** Aparece solo cuando la API publicada pide la clave de demo. */
+function DemoCodeField({ error }: { error: Error | null }) {
+  const code = useDemo((s) => s.code);
+  const setCode = useDemo((s) => s.setCode);
+  const requested = error instanceof ApiError && error.code === 'demo_code';
+
+  if (!requested && !code) return null;
+
+  return (
+    <GroupedList footer="Te la entrega quien comparte la demo. Después vuelve a ingresar.">
+      <TextInput
+        accessibilityLabel="Clave de demo"
+        placeholder="Clave de demo"
+        placeholderTextColor={colors.secondaryLabel}
+        autoCapitalize="none"
+        autoCorrect={false}
+        secureTextEntry
+        value={code}
+        onChangeText={setCode}
+        style={styles.input}
+      />
+    </GroupedList>
   );
 }
 
@@ -67,6 +93,7 @@ function StudentLogin() {
           ))}
         </GroupedList>
       ) : null}
+      <DemoCodeField error={error} />
       {error ? <Notice error>{error.message}</Notice> : null}
     </>
   );
@@ -112,6 +139,7 @@ function OperatorLogin() {
         loading={login.isPending}
         onPress={submit}
       />
+      <DemoCodeField error={login.error} />
       {login.error ? <Notice error>{login.error.message}</Notice> : null}
     </>
   );

@@ -1,5 +1,6 @@
 import Constants from 'expo-constants';
 
+import { useDemo } from '@/store/demo';
 import { useSession } from '@/store/session';
 
 /**
@@ -30,6 +31,7 @@ type ApiOptions = { body?: unknown; method?: 'PUT' | 'PATCH' };
 export async function api<T>(path: string, options: ApiOptions = {}): Promise<T> {
   const token = useSession.getState().session?.token;
   const post = options.body !== undefined;
+  const demoCode = useDemo.getState().code.trim();
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), post ? 30000 : 8000);
 
@@ -40,6 +42,7 @@ export async function api<T>(path: string, options: ApiOptions = {}): Promise<T>
       headers: {
         ...(post ? { 'Content-Type': 'application/json' } : null),
         ...(token ? { Authorization: `Bearer ${token}` } : null),
+        ...(demoCode ? { 'X-Demo-Code': demoCode } : null),
       },
       body: post ? JSON.stringify(options.body) : undefined,
       signal: controller.signal,

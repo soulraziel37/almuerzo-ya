@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, Text, TextInput } from 'react-native';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { api, ApiError } from '@/api/client';
 import { useMockUsers } from '@/api/queries';
@@ -99,29 +99,40 @@ function StudentLogin() {
   );
 }
 
+const OPERATOR_PREFIX = 'OP-';
+
 function OperatorLogin() {
-  const [loginId, setLoginId] = useState('');
+  /** Solo el número; el prefijo es fijo. */
+  const [number, setNumber] = useState('');
   const [password, setPassword] = useState('');
   const login = useLogin();
-  const incomplete = !loginId.trim() || !password;
+  const incomplete = !number || !password;
 
   const submit = () => {
-    if (!incomplete) login.mutate({ path: '/auth/operator/login', body: { loginId, password } });
+    if (incomplete) return;
+    // Los ID tienen cuatro dígitos: "1" equivale a "0001".
+    const loginId = `${OPERATOR_PREFIX}${number.padStart(4, '0')}`;
+    login.mutate({ path: '/auth/operator/login', body: { loginId, password } });
   };
 
   return (
     <>
       <GroupedList footer="Acceso solo para personal del casino.">
-        <TextInput
-          accessibilityLabel="ID de operador"
-          placeholder="ID de operador"
-          placeholderTextColor={colors.secondaryLabel}
-          autoCapitalize="characters"
-          autoCorrect={false}
-          value={loginId}
-          onChangeText={setLoginId}
-          style={styles.input}
-        />
+        <View style={styles.idRow}>
+          <Text accessibilityElementsHidden style={styles.prefix}>
+            {OPERATOR_PREFIX}
+          </Text>
+          <TextInput
+            accessibilityLabel="Número de operador, sin el prefijo OP"
+            placeholder="0001"
+            placeholderTextColor={colors.secondaryLabel}
+            keyboardType="number-pad"
+            maxLength={6}
+            value={number}
+            onChangeText={(text) => setNumber(text.replace(/\D/g, ''))}
+            style={[styles.input, styles.idInput]}
+          />
+        </View>
         <TextInput
           accessibilityLabel="Contraseña"
           placeholder="Contraseña"
@@ -154,5 +165,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
   },
+  idRow: { flexDirection: 'row', alignItems: 'center', paddingLeft: spacing.lg },
+  prefix: { ...type.body, color: colors.label },
+  idInput: { flex: 1, paddingLeft: 0 },
   link: { ...type.body, color: colors.link, textAlign: 'center', paddingVertical: spacing.md },
 });

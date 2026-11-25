@@ -63,6 +63,6 @@ const styles = StyleSheet.create({
   disabled: { backgroundColor: colors.card, opacity: 0.6 },
   time: { ...type.headline, color: colors.label },
   note: { ...type.caption, color: colors.secondaryLabel },
-  selectedText: { color: colors.card },
+  selectedText: { color: colors.onAccent },
   strike: { textDecorationLine: 'line-through' },
 });

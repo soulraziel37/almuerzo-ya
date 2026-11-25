@@ -40,9 +40,10 @@ export function MenuCard({ menu, selected, onSelect }: MenuCardProps) {
             tintColor={colors.accent}
           />
         )}
-        {low ? (
-          <View style={[styles.chip, styles.lowChip]}>
-            <Text style={[styles.chipText, styles.lowText]}>{stockText(menu)}</Text>
+        {low || unavailable ? (
+          // Sin vidrio en tarjetas atenuadas: Liquid Glass falla bajo una opacidad menor.
+          <View style={[styles.chip, low ? styles.lowChip : styles.offChip]}>
+            <Text style={[styles.chipText, low && styles.lowText]}>{stockText(menu)}</Text>
           </View>
         ) : (
           <Glass style={styles.chip}>
@@ -88,8 +89,9 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
   },
   lowChip: { backgroundColor: colors.warning },
+  offChip: { backgroundColor: colors.card },
   chipText: { ...type.footnote, fontWeight: '600', color: colors.label },
-  lowText: { color: colors.card },
+  lowText: { color: colors.onAccent },
   body: { padding: spacing.lg, gap: spacing.xs },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   label: { ...type.footnote, fontWeight: '600', color: colors.secondaryLabel },

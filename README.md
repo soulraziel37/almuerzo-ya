@@ -16,8 +16,8 @@ Documento del proyecto: [docs/PROYECTO.md](docs/PROYECTO.md) · Diseño: [docs/d
 - [x] Fase 3 · Estudiante
 - [x] Fase 4 · Pagos (simulados)
 - [x] Fase 5 · Operador
-- [ ] Fase 6 · Entra ID
-- [ ] Fase 7 · Pulido
+- Fase 6 · Entra ID: omitida (prototipo)
+- [x] Fase 7 · Pulido
 
 ## Levantar
 
@@ -94,9 +94,15 @@ Opciones:
 ## Probar el flujo del operador
 
 - Ingreso: pestaña "Operador", `OP-0001` / `operador123`.
-- Escanear: la cámara lee el QR sola; "Código" permite escribirlo.
+- Escanear: la cámara lee el QR sola, sin botón (el canvas tenía uno); "Código" permite escribirlo.
 - "Cerrar día" no se puede deshacer: detiene las ventas y expira lo no retirado.
 - Las fotos de los platos se guardan en `api/uploads/`.
+
+## Apariencia y accesibilidad
+
+- Modo claro y oscuro según el ajuste del teléfono (`mobile/src/theme/palette.ts`).
+- Respeta "Reducir transparencia"; etiquetas y avisos para VoiceOver.
+- El stock y los contadores se actualizan cada 5 s, solo con la app en primer plano.
 
 ## Tests y tipos
 
@@ -112,6 +118,7 @@ npm --prefix api test; npm --prefix api run typecheck; npm --prefix mobile run t
 
 ## Diferencias con el documento
 
+- Sin Entra ID (§9): se entra con usuarios de prueba (`AUTH_MODE=mock`).
 - Sin Apple Pay ni Webpay (§10): es un prototipo y el pago se marca con un botón. Por eso no
   hay selección de medio de pago ni pantallas de pasarela o de resultado.
 - Un QR por pedido (§4); el canvas menciona uno por almuerzo.

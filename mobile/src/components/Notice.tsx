@@ -6,7 +6,8 @@ import { colors, type } from '@/theme/tokens';
 export function Notice({ children, error = false }: { children: string; error?: boolean }) {
   return (
     <Text
-      accessibilityLiveRegion={error ? 'assertive' : 'none'}
+      accessibilityRole={error ? 'alert' : 'text'}
+      accessibilityLiveRegion={error ? 'assertive' : 'polite'}
       style={[styles.text, error && styles.error]}>
       {children}
     </Text>

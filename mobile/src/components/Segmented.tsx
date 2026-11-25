@@ -23,7 +23,6 @@ export function Segmented<T extends string>({
         const next = options[nativeEvent.selectedSegmentIndex];
         if (next !== undefined) onChange(next);
       }}
-      appearance="light"
       accessibilityLabel={accessibilityLabel}
       style={styles.control}
     />

@@ -1,28 +1,18 @@
-// Tokens de docs/PROYECTO.md §8. No agregar otra paleta.
-export const colors = {
-  bg: '#F2F2F7', // systemGroupedBackground
-  card: '#FFFFFF',
-  label: '#000000',
-  secondaryLabel: '#3C3C43',
-  separator: 'rgba(60,60,67,0.29)',
-  accent: '#1E7B37', // verde marca (contraste AA sobre blanco)
-  accentSoft: '#D8F0DC',
-  warning: '#C93400', // stock bajo
-  danger: '#D70015',
-  link: '#0A64D8',
-  switchOn: '#34C759',
-} as const;
+// Tokens de docs/PROYECTO.md §8. Los colores viven en palette.ts (claro y oscuro).
+import { colors } from '@/theme/colors';
+
+export { colors };
 
 export const radius = { card: 26, sheet: 38, tile: 16, pill: 999 } as const;
 
 export const spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 20 } as const;
 
 /** Alturas en puntos: botón principal y área táctil mínima (§8). */
-export const size = { button: 52, touch: 44 } as const;
+export const size = { button: 52, touch: 44, tabBar: 64 } as const;
 
-/** Alternativa a Liquid Glass: `card` translúcido y el desenfoque del canvas. */
+/** Alternativa a Liquid Glass: relleno translúcido y el desenfoque del canvas. */
 export const glass = {
-  fill: 'rgba(255,255,255,0.65)',
+  fill: colors.glassFill,
   webFilter: 'blur(20px) saturate(180%)',
 } as const;
 

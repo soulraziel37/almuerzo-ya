@@ -1,7 +1,8 @@
 import { Host, Switch } from '@expo/ui';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-import { colors, size, spacing, type } from '@/theme/tokens';
+import { size, spacing } from '@/theme/tokens';
+import { usePalette } from '@/theme/usePalette';
 
 type ToggleRowProps = {
   title: string;
@@ -10,13 +11,17 @@ type ToggleRowProps = {
   disabled?: boolean;
 };
 
-/** Fila con el interruptor nativo (SwiftUI en iOS). */
+/**
+ * Fila con el interruptor nativo (SwiftUI en iOS). El título es la etiqueta del propio
+ * interruptor, así VoiceOver lo lee junto con su estado.
+ */
 export function ToggleRow({ title, value, onValueChange, disabled }: ToggleRowProps) {
+  const theme = usePalette();
+
   return (
     <View style={styles.row}>
-      <Text style={styles.title}>{title}</Text>
-      <Host matchContents seedColor={colors.switchOn} colorScheme="light">
-        <Switch value={value} onValueChange={onValueChange} disabled={disabled} />
+      <Host matchContents={{ vertical: true }} seedColor={theme.switchOn} style={styles.host}>
+        <Switch label={title} value={value} onValueChange={onValueChange} disabled={disabled} />
       </Host>
     </View>
   );
@@ -25,12 +30,9 @@ export function ToggleRow({ title, value, onValueChange, disabled }: ToggleRowPr
 const styles = StyleSheet.create({
   row: {
     minHeight: size.touch,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacing.md,
+    justifyContent: 'center',
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
   },
-  title: { ...type.body, color: colors.label, flexShrink: 1 },
+  host: { alignSelf: 'stretch' },
 });

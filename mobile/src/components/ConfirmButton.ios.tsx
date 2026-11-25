@@ -14,7 +14,8 @@ import { useState } from 'react';
 import { StyleSheet } from 'react-native';
 
 import type { ConfirmButtonProps } from '@/components/ConfirmButton.types';
-import { colors, type } from '@/theme/tokens';
+import { type } from '@/theme/tokens';
+import { usePalette } from '@/theme/usePalette';
 
 /**
  * Botón con confirmación nativa: en iOS 26 el sistema la muestra como una burbuja
@@ -30,9 +31,10 @@ export function ConfirmButton({
   onConfirm,
 }: ConfirmButtonProps) {
   const [presented, setPresented] = useState(false);
+  const theme = usePalette();
 
   return (
-    <Host matchContents={{ vertical: true }} colorScheme="light" style={styles.host}>
+    <Host matchContents={{ vertical: true }} style={styles.host}>
       <ConfirmationDialog
         title={question}
         titleVisibility="visible"
@@ -45,7 +47,7 @@ export function ConfirmButton({
               buttonStyle('bordered'),
               buttonBorderShape('capsule'),
               controlSize('large'),
-              tint(colors.accent),
+              tint(theme.accent),
               disabled(loading || isDisabled),
             ]}>
             <Text

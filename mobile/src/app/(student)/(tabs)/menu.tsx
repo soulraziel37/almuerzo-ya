@@ -25,8 +25,9 @@ export default function MenuScreen() {
   const total = Object.values(items).reduce((sum, qty) => sum + qty, 0);
   const atMax = !!data && !!selected && inCart >= Math.min(data.maxPerMenu, selected.available);
 
+  // Al agregar al carrito aparece "Ver carrito" al final: se desplaza para mostrarlo.
   return (
-    <Screen title="Menú del día">
+    <Screen title="Menú del día" revealEnd={total}>
       {isPending ? <Notice>Cargando el menú…</Notice> : null}
       {error ? <Notice error>{error.message}</Notice> : null}
 

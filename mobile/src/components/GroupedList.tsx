@@ -1,5 +1,5 @@
 import { SymbolView } from 'expo-symbols';
-import { Children, type PropsWithChildren, type ReactNode } from 'react';
+import { Children, isValidElement, type PropsWithChildren, type ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors, radius, size, spacing, type } from '@/theme/tokens';
@@ -41,6 +41,7 @@ type ListRowProps = {
 };
 
 export function ListRow({ title, subtitle, trailing, onPress, selected }: ListRowProps) {
+  const isPlainText = isValidElement(trailing) && trailing.type === Text;
   const content = (
     <>
       <View style={styles.texts}>
@@ -58,7 +59,14 @@ export function ListRow({ title, subtitle, trailing, onPress, selected }: ListRo
     </>
   );
 
-  if (!onPress) return <View style={styles.row}>{content}</View>;
+  // Sin controles propios, VoiceOver lee la fila completa de una vez.
+  if (!onPress) {
+    return (
+      <View accessible={trailing === undefined || isPlainText} style={styles.row}>
+        {content}
+      </View>
+    );
+  }
 
   return (
     <Pressable

@@ -13,16 +13,18 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { SafeAreaView as TabSafeArea } from 'react-native-screens/experimental';
 
 import { useSummary } from '@/api/operator';
 import { Glass } from '@/components/Glass';
 import { PrimaryButton } from '@/components/PrimaryButton';
-import { colors, radius, scanner, size, spacing, type } from '@/theme/tokens';
+import { TabSlide } from '@/components/TabSlide';
+import { radius, scanner, size, spacing, type } from '@/theme/tokens';
+import { useTabBarClearance } from '@/theme/useTabBarClearance';
 
 /** Escáner del operador, según `docs/design/Escanear.dc.html`. */
 export default function ScanScreen() {
   const summary = useSummary();
+  const clearance = useTabBarClearance();
   const [permission, requestPermission] = useCameraPermissions();
   const [focused, setFocused] = useState(false);
   const [torch, setTorch] = useState(false);
@@ -55,129 +57,129 @@ export default function ScanScreen() {
     setTyping(false);
   };
 
-  // La lectura es automática; el botón pide el permiso o vuelve a activar el lector.
-  const scan = () => {
-    if (!permission?.granted) {
-      void requestPermission();
-      return;
-    }
-    locked.current = false;
-  };
-
   const cameraOn = focused && !!permission?.granted;
   const blocked = !!permission && !permission.granted && !permission.canAskAgain;
+  const canAsk = !!permission && !permission.granted && permission.canAskAgain;
 
   return (
-    <View style={styles.screen}>
-      {focused ? <StatusBar style="light" /> : null}
-      {cameraOn ? (
-        <CameraView
-          style={StyleSheet.absoluteFill}
-          facing="back"
-          enableTorch={torch}
-          barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
-          onBarcodeScanned={typing ? undefined : ({ data }) => validate({ token: data })}
-        />
-      ) : (
-        <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-          <View style={[styles.circle, styles.circle1]} />
-          <View style={[styles.circle, styles.circle2]} />
-          <View style={[styles.circle, styles.circle3]} />
-        </View>
-      )}
+    <TabSlide background={scanner.bg}>
+      <View style={styles.screen}>
+        {focused ? <StatusBar style="light" /> : null}
+        {cameraOn ? (
+          <CameraView
+            style={StyleSheet.absoluteFill}
+            facing="back"
+            enableTorch={torch}
+            barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
+            onBarcodeScanned={typing ? undefined : ({ data }) => validate({ token: data })}
+          />
+        ) : (
+          <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+            <View style={[styles.circle, styles.circle1]} />
+            <View style={[styles.circle, styles.circle2]} />
+            <View style={[styles.circle, styles.circle3]} />
+          </View>
+        )}
 
-      {/* El área nativa sí descuenta la tab bar flotante; la de arriba, la barra de estado. */}
-      <TabSafeArea style={styles.safeArea} edges={{ bottom: true }}>
         <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
-          <KeyboardAvoidingView
-            style={styles.content}
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-            <View style={styles.topRow}>
-              <Glass tone="dark" style={styles.station}>
-                <View style={styles.dot} />
-                <Text style={styles.stationText}>Mesón 2 · Turno almuerzo</Text>
-              </Glass>
-              <Glass tone="dark" interactive style={styles.torch}>
-                <Pressable
-                  accessibilityRole="switch"
-                  accessibilityLabel="Linterna"
-                  accessibilityState={{ checked: torch, disabled: !cameraOn }}
-                  disabled={!cameraOn}
-                  onPress={() => setTorch((on) => !on)}
-                  style={styles.torchTouch}>
-                  <SymbolView
-                    name={{
-                      ios: torch ? 'flashlight.on.fill' : 'flashlight.off.fill',
-                      android: torch ? 'flashlight_on' : 'flashlight_off',
-                      web: torch ? 'flashlight_on' : 'flashlight_off',
-                    }}
-                    size={20}
-                    tintColor={scanner.text}
+          {/* Con el teclado abierto la tab bar queda tapada: no hace falta reservarle espacio.
+              Va en un View aparte porque KeyboardAvoidingView reemplaza su propio paddingBottom. */}
+          <View style={[styles.safeArea, { paddingBottom: typing ? 0 : clearance }]}>
+            <KeyboardAvoidingView
+              style={styles.content}
+              behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+              <View style={styles.topRow}>
+                <Glass tone="dark" style={styles.station}>
+                  <View style={styles.dot} />
+                  <Text maxFontSizeMultiplier={1.4} style={styles.stationText}>Mesón 2 · Turno almuerzo</Text>
+                </Glass>
+                <Glass tone="dark" interactive style={styles.torch}>
+                  <Pressable
+                    accessibilityRole="switch"
+                    accessibilityLabel="Linterna"
+                    accessibilityState={{ checked: torch, disabled: !cameraOn }}
+                    disabled={!cameraOn}
+                    onPress={() => setTorch((on) => !on)}
+                    style={styles.torchTouch}>
+                    <SymbolView
+                      name={{
+                        ios: torch ? 'flashlight.on.fill' : 'flashlight.off.fill',
+                        android: torch ? 'flashlight_on' : 'flashlight_off',
+                        web: torch ? 'flashlight_on' : 'flashlight_off',
+                      }}
+                      size={20}
+                      tintColor={scanner.text}
+                    />
+                  </Pressable>
+                </Glass>
+              </View>
+
+              <View style={styles.counters}>
+                <Counter label="Entregados" value={summary.data?.delivered} />
+                <Counter label="Por retirar" value={summary.data?.pending} />
+              </View>
+
+              <View style={styles.middle}>
+                {typing ? null : (
+                  <View style={styles.viewfinder}>
+                    <View style={[styles.corner, styles.topLeft]} />
+                    <View style={[styles.corner, styles.topRight]} />
+                    <View style={[styles.corner, styles.bottomLeft]} />
+                    <View style={[styles.corner, styles.bottomRight]} />
+                    <View style={styles.scanLine} />
+                  </View>
+                )}
+                <Text
+                accessibilityLiveRegion="polite"
+                maxFontSizeMultiplier={1.4}
+                style={styles.instruction}>
+                  {summary.error
+                    ? summary.error.message
+                    : blocked
+                      ? 'Activa la cámara en Ajustes o ingresa el código.'
+                      : typing
+                        ? 'Ingresa el código del pedido'
+                        : 'Apunta al código QR del estudiante'}
+                </Text>
+              </View>
+
+              {typing ? (
+                <View style={styles.manual}>
+                  <TextInput
+                    accessibilityLabel="Código del pedido"
+                    placeholder="Código, p. ej. A7F3-29"
+                    placeholderTextColor={scanner.secondaryText}
+                    autoCapitalize="characters"
+                    autoCorrect={false}
+                    autoFocus
+                    returnKeyType="search"
+                    value={code}
+                    onChangeText={setCode}
+                    onSubmitEditing={submitCode}
+                    style={styles.input}
                   />
-                </Pressable>
-              </Glass>
-            </View>
-
-            <View style={styles.counters}>
-              <Counter label="Entregados" value={summary.data?.delivered} />
-              <Counter label="Por retirar" value={summary.data?.pending} />
-            </View>
-
-            <View style={styles.middle}>
-              {typing ? null : (
-                <View style={styles.viewfinder}>
-                  <View style={[styles.corner, styles.topLeft]} />
-                  <View style={[styles.corner, styles.topRight]} />
-                  <View style={[styles.corner, styles.bottomLeft]} />
-                  <View style={[styles.corner, styles.bottomRight]} />
-                  <View style={styles.scanLine} />
-                </View>
-              )}
-              <Text style={styles.instruction}>
-                {summary.error
-                  ? summary.error.message
-                  : blocked
-                    ? 'Activa la cámara en Ajustes o ingresa el código.'
-                    : typing
-                      ? 'Ingresa el código del pedido'
-                      : 'Apunta al código QR del estudiante'}
-              </Text>
-            </View>
-
-            {typing ? (
-              <View style={styles.manual}>
-                <TextInput
-                  accessibilityLabel="Código del pedido"
-                  placeholder="Código, p. ej. A7F3-29"
-                  placeholderTextColor={scanner.secondaryText}
-                  autoCapitalize="characters"
-                  autoCorrect={false}
-                  autoFocus
-                  returnKeyType="search"
-                  value={code}
-                  onChangeText={setCode}
-                  onSubmitEditing={submitCode}
-                  style={styles.input}
-                />
-                <View style={styles.buttons}>
-                  <GlassButton title="Cancelar" onPress={() => setTyping(false)} />
-                  <View style={styles.flex}>
-                    <PrimaryButton title="Validar" disabled={!code.trim()} onPress={submitCode} />
+                  <View style={styles.buttons}>
+                    <GlassButton title="Cancelar" onPress={() => setTyping(false)} />
+                    <View style={styles.flex}>
+                      <PrimaryButton title="Validar" disabled={!code.trim()} onPress={submitCode} />
+                    </View>
                   </View>
                 </View>
-              </View>
-            ) : (
-              <View style={styles.buttons}>
-                <GlassButton title="Código" keyboardIcon onPress={() => setTyping(true)} />
-                <View style={styles.flex}>
-                  <PrimaryButton title="Escanear" onPress={scan} />
+              ) : (
+                <View style={styles.manual}>
+                  {canAsk ? (
+                    <PrimaryButton title="Permitir cámara" onPress={() => void requestPermission()} />
+                  ) : null}
+                  <View style={styles.buttons}>
+                    <GlassButton title="Código" keyboardIcon onPress={() => setTyping(true)} />
+                  </View>
                 </View>
-              </View>
-            )}
-          </KeyboardAvoidingView>
+              )}
+            </KeyboardAvoidingView>
+          </View>
         </SafeAreaView>
-      </TabSafeArea>
-    </View>
+      </View>
+    </TabSlide>
   );
 }
 
@@ -188,8 +190,8 @@ function Counter({ label, value }: { label: string; value?: number }) {
       accessible
       accessibilityLabel={`${label}: ${value ?? 'cargando'}`}
       style={styles.counter}>
-      <Text style={styles.counterLabel}>{label}</Text>
-      <Text style={styles.counterValue}>{value ?? '–'}</Text>
+      <Text maxFontSizeMultiplier={1.4} style={styles.counterLabel}>{label}</Text>
+      <Text maxFontSizeMultiplier={1.4} style={styles.counterValue}>{value ?? '–'}</Text>
     </Glass>
   );
 }
@@ -207,7 +209,7 @@ function GlassButton({ title, keyboardIcon, onPress }: GlassButtonProps) {
             tintColor={scanner.text}
           />
         ) : null}
-        <Text style={styles.glassText}>{title}</Text>
+        <Text maxFontSizeMultiplier={1.4} style={styles.glassText}>{title}</Text>
       </Pressable>
     </Glass>
   );
@@ -224,7 +226,7 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1 },
   content: {
     flex: 1,
-    padding: spacing.lg,
+    paddingHorizontal: spacing.lg,
     gap: spacing.lg,
     // En web, la tab bar de NativeTabs flota arriba.
     paddingTop: Platform.OS === 'web' ? 76 : spacing.sm,
@@ -305,7 +307,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
     borderRadius: radius.pill,
     backgroundColor: scanner.glassOpaque,
-    color: colors.card,
+    color: scanner.text,
   },
   buttons: { flexDirection: 'row', gap: 10 },
   flex: { flex: 1 },

@@ -60,7 +60,7 @@ export default function ValidateScreen() {
     <Screen>
       <View accessibilityLiveRegion="assertive" style={styles.header}>
         <View style={[styles.badge, { backgroundColor: look.color }]}>
-          <SymbolView name={look.icon} size={32} tintColor={colors.card} />
+          <SymbolView name={look.icon} size={32} tintColor={colors.onAccent} />
         </View>
         <Text accessibilityRole="header" style={styles.title}>
           {title}

@@ -29,7 +29,7 @@ export function Glass({ interactive = false, tone = 'light', style, children, ..
       <GlassView
         {...props}
         isInteractive={interactive}
-        colorScheme={tone}
+        colorScheme={tone === 'dark' ? 'dark' : 'auto'}
         style={[styles.shape, style]}>
         {children}
       </GlassView>

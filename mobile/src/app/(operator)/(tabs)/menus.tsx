@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text, type ColorValue } from 'react-native';
 
 import { useWeek, type ManagedMenu } from '@/api/operator';
 import { GroupedList, ListRow } from '@/components/GroupedList';
@@ -12,7 +12,7 @@ import { longDate, shortDay } from '@/lib/format';
 import { useSession } from '@/store/session';
 import { colors, type } from '@/theme/tokens';
 
-const states: Record<ManagedMenu['state'], { label: string; color: string }> = {
+const states: Record<ManagedMenu['state'], { label: string; color: ColorValue }> = {
   published: { label: 'Publicado', color: colors.accent },
   scheduled: { label: 'Programado', color: colors.link },
   closed: { label: 'Finalizado', color: colors.secondaryLabel },

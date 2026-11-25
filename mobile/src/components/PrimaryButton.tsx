@@ -20,7 +20,7 @@ export function PrimaryButton({
   loading = false,
 }: PrimaryButtonProps) {
   const inactive = disabled || loading;
-  const textColor = variant === 'filled' ? colors.card : colors.accent;
+  const textColor = variant === 'filled' ? colors.onAccent : colors.accent;
 
   return (
     <Pressable

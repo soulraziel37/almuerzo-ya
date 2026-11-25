@@ -88,6 +88,10 @@ Opciones:
 - Las reservas cierran a las 11:30. Para probar a cualquier hora, poner
   `ENFORCE_RESERVATION_WINDOW=false` en `.env` y correr `docker compose up -d api`.
 - Un pedido sin pagar expira a los `ORDER_TTL_MINUTES` (15) y devuelve el stock.
+- Máximo por estudiante y día: `MAX_LUNCHES_PER_DAY` (10, por confirmar con el casino).
+- Las franjas se crean solas los días con menú; su cupo (40) cuenta almuerzos, no pedidos.
+- Un pedido pagado que no se retira vence al cerrar el día o, si nadie lo cierra, al día
+  siguiente.
 - El pago es simulado: "Marcar como pagado" deja el pedido pagado y muestra su QR.
 - Al instalar librerías nuevas, reiniciar el servidor de Expo.
 
@@ -95,19 +99,25 @@ Opciones:
 
 - Ingreso: pestaña "Operador", `OP-0001` / `operador123`.
 - Escanear: la cámara lee el QR sola, sin botón (el canvas tenía uno); "Código" permite escribirlo.
+- "Modo tótem" muestra el refrigerador a pantalla completa, sin las pestañas del operador.
+- Refri: simulación del refrigerador de retiro. Con el QR (o el código escrito) del estudiante se
+  abre la puerta y el pedido queda entregado; cada QR abre una sola vez.
 - "Cerrar día" no se puede deshacer: detiene las ventas y expira lo no retirado.
 - Las fotos de los platos se guardan en `api/uploads/`.
 
 ## Apariencia y accesibilidad
 
+- Animaciones con Reanimated; con "Reducir movimiento" se desactivan.
+- En web la barra de pestañas va abajo en celulares y arriba desde 600 px.
 - Modo claro y oscuro según el ajuste del teléfono (`mobile/src/theme/palette.ts`).
 - Respeta "Reducir transparencia"; etiquetas y avisos para VoiceOver.
 - El stock y los contadores se actualizan cada 5 s, solo con la app en primer plano.
 
 ## Seguridad de la API
 
-- Límite por IP: 300 peticiones por minuto y 20 en las rutas de ingreso
-  (`RATE_LIMIT_PER_MINUTE`, `AUTH_RATE_LIMIT_PER_MINUTE`).
+- Límite de 300 peticiones por minuto: por usuario con sesión, o por IP sin ella
+  (`RATE_LIMIT_PER_MINUTE`). El ingreso se limita siempre por IP: 20 para operadores y 120
+  para estudiantes (`AUTH_RATE_LIMIT_PER_MINUTE`, `STUDENT_AUTH_RATE_LIMIT_PER_MINUTE`).
 - Cabeceras de seguridad (Helmet), cuerpos de hasta 32 KB (3 MB al subir fotos) y
   `CORS_ORIGINS` para limitar los orígenes web.
 - Publicada: exige clave de demo, clave de operador y secretos largos; si faltan no arranca.
@@ -130,6 +140,9 @@ npm --prefix api test; npm --prefix api run typecheck; npm --prefix mobile run t
 - Sin Entra ID (§9): se entra con usuarios de prueba (`AUTH_MODE=mock`).
 - Sin Apple Pay ni Webpay (§10): es un prototipo y el pago se marca con un botón. Por eso no
   hay selección de medio de pago ni pantallas de pasarela o de resultado.
+- La paleta cambió respecto de §8: verde más profundo, neutros y estados con contraste AA en
+  claro y oscuro (`mobile/src/theme/palette.ts`).
+- La pestaña Refri no está en el documento: es una alternativa al retiro en mesón.
 - Un QR por pedido (§4); el canvas menciona uno por almuerzo.
 - "Mesón 2 · Turno almuerzo" es un texto fijo del canvas: el modelo no tiene mesones.
 - "Cerrar sesión" del operador está en la pestaña Menús.

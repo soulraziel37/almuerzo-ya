@@ -7,7 +7,11 @@ export default function OperatorLayout() {
     <NativeTabs tintColor={colors.accent}>
       <NativeTabs.Trigger name="escanear" disableAutomaticContentInsets>
         <NativeTabs.Trigger.Icon sf="qrcode.viewfinder" md="qr_code_scanner" />
-        <NativeTabs.Trigger.Label>Escanear</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>Escáner</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="refri" disableAutomaticContentInsets>
+        <NativeTabs.Trigger.Icon sf={{ default: 'refrigerator', selected: 'refrigerator.fill' }} md="kitchen" />
+        <NativeTabs.Trigger.Label>Refri</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="stock" disableAutomaticContentInsets>
         <NativeTabs.Trigger.Icon

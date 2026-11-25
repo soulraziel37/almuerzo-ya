@@ -1,48 +1,52 @@
-import { useEffect, useRef, type PropsWithChildren } from 'react';
-import { Platform, ScrollView, StyleSheet, Text, type ScrollViewInstance } from 'react-native';
+import type { PropsWithChildren, ReactNode } from 'react';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { TabSlide } from '@/components/TabSlide';
-import { colors, spacing, type } from '@/theme/tokens';
-import { useTabBarClearance } from '@/theme/useTabBarClearance';
+import { colors, maxWidth, size, spacing, type } from '@/theme/tokens';
+import { useTabBarClearance, useWebTabsOnTop } from '@/theme/useTabBarClearance';
+
+const FLOATING_SPACE = size.button + spacing.lg;
 
 type ScreenProps = PropsWithChildren<{
   /** Sin título, la pantalla usa el encabezado nativo del Stack. */
   title?: string;
   /** `false` en pantallas que están fuera de la tab bar. */
   tabbed?: boolean;
-  /** Cada vez que este número sube, la pantalla se desplaza hasta el final. */
-  revealEnd?: number;
+  /** Aprovecha el ancho en pantallas grandes. */
+  wide?: boolean;
+  /** Control que flota sobre el final de la pantalla. */
+  floating?: ReactNode;
+  /** Decoración detrás del contenido. */
+  backdrop?: ReactNode;
 }>;
 
-export function Screen({ title, tabbed = !!title, revealEnd = 0, children }: ScreenProps) {
+export function Screen({
+  title,
+  tabbed = !!title,
+  wide = false,
+  floating,
+  backdrop,
+  children,
+}: ScreenProps) {
   const clearance = useTabBarClearance();
-  const scroll = useRef<ScrollViewInstance>(null);
-  const previous = useRef(revealEnd);
-
-  useEffect(() => {
-    const grew = revealEnd > previous.current;
-    previous.current = revealEnd;
-    if (!grew) return;
-    // Se espera a que lo recién agregado tenga tamaño.
-    const timer = setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 150);
-    return () => clearTimeout(timer);
-  }, [revealEnd]);
+  const tabsOnTop = useWebTabsOnTop();
 
   const screen = (
     <SafeAreaView
       style={styles.safeArea}
       edges={title ? ['top', 'left', 'right'] : ['left', 'right', 'bottom']}>
+      {backdrop}
       <ScrollView
-        ref={scroll}
         // Con pestañas, el margen inferior se calcula aquí y no lo ajusta el sistema.
         contentInsetAdjustmentBehavior={tabbed ? 'never' : 'automatic'}
         scrollIndicatorInsets={tabbed ? { bottom: clearance } : undefined}
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={[
           styles.content,
-          tabbed && { paddingBottom: clearance },
-          tabbed && Platform.OS === 'web' && styles.webTabs,
+          wide && styles.wide,
+          { paddingBottom: (tabbed ? clearance : spacing.lg) + (floating ? FLOATING_SPACE : 0) },
+          tabbed && tabsOnTop && styles.webTabs,
         ]}>
         {title ? (
           <Text accessibilityRole="header" style={styles.title}>
@@ -51,6 +55,13 @@ export function Screen({ title, tabbed = !!title, revealEnd = 0, children }: Scr
         ) : null}
         {children}
       </ScrollView>
+      {floating ? (
+        <View
+          pointerEvents="box-none"
+          style={[styles.floating, { bottom: tabbed ? clearance : spacing.lg }]}>
+          {floating}
+        </View>
+      ) : null}
     </SafeAreaView>
   );
 
@@ -59,8 +70,24 @@ export function Screen({ title, tabbed = !!title, revealEnd = 0, children }: Scr
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.bg },
-  content: { padding: spacing.lg, gap: spacing.lg },
+  content: {
+    padding: spacing.lg,
+    gap: spacing.lg,
+    width: '100%',
+    maxWidth: maxWidth.content,
+    alignSelf: 'center',
+  },
+  wide: { maxWidth: maxWidth.wide },
+  floating: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    paddingHorizontal: spacing.lg,
+    width: '100%',
+    maxWidth: maxWidth.content,
+    marginHorizontal: 'auto',
+  },
   // En web, la tab bar de NativeTabs flota arriba y taparía el título.
-  webTabs: { paddingTop: 76 },
+  webTabs: { paddingTop: 84 },
   title: { ...type.largeTitle, color: colors.label },
 });

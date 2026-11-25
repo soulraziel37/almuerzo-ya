@@ -32,9 +32,9 @@ export function studentRoutes(app: FastifyInstance, { prisma, config, now }: Ser
   const sweep = () => expireOrders(prisma, config, clock());
 
   app.get('/menus/today', async (request) => {
-    await student(request);
+    const { userId } = await student(request);
     await sweep();
-    return todayMenu(prisma, config, clock());
+    return todayMenu(prisma, config, userId, clock());
   });
 
   app.get('/pickup-slots/today', async (request) => {

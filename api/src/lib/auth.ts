@@ -19,20 +19,32 @@ export function signSession(session: Session, secret: string): Promise<string> {
     .sign(key(secret));
 }
 
+/** Sesión del token de la petición, o `null` si falta o no es válido. */
+export async function verifySession(
+  request: FastifyRequest,
+  secret: string,
+): Promise<Session | null> {
+  const token = request.headers.authorization?.match(/^Bearer (.+)$/)?.[1];
+  if (!token) return null;
+  try {
+    const { payload } = await jwtVerify(token, key(secret), { algorithms: ['HS256'] });
+    return { userId: payload.sub!, role: payload.role as Role };
+  } catch {
+    return null;
+  }
+}
+
 /** Exige un token válido con uno de los roles indicados. */
 export async function requireSession(
   request: FastifyRequest,
   secret: string,
   roles: Role[],
 ): Promise<Session> {
-  const token = request.headers.authorization?.match(/^Bearer (.+)$/)?.[1];
-  if (!token) throw new AppError(401, 'no_session', 'Inicia sesión para continuar.');
-
-  let session: Session;
-  try {
-    const { payload } = await jwtVerify(token, key(secret), { algorithms: ['HS256'] });
-    session = { userId: payload.sub!, role: payload.role as Role };
-  } catch {
+  if (!/^Bearer .+$/.test(request.headers.authorization ?? '')) {
+    throw new AppError(401, 'no_session', 'Inicia sesión para continuar.');
+  }
+  const session = await verifySession(request, secret);
+  if (!session) {
     throw new AppError(401, 'invalid_session', 'Tu sesión expiró. Vuelve a entrar.');
   }
 

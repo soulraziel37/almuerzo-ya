@@ -2,6 +2,7 @@ import type { FastifyServerOptions } from 'fastify';
 import { describe, expect, it } from 'vitest';
 import { loadConfig } from '../src/config';
 import type { PrismaClient } from '../src/generated/prisma/client';
+import { signSession } from '../src/lib/auth';
 import { trustHops } from '../src/lib/security';
 import { buildServer } from '../src/server';
 
@@ -15,7 +16,8 @@ const server = (env: Record<string, string> = {}, options: FastifyServerOptions 
         JWT_SECRET: 'secreto-de-prueba',
         QR_SECRET: 'qr-de-prueba',
         RATE_LIMIT_PER_MINUTE: '5',
-        AUTH_RATE_LIMIT_PER_MINUTE: '2',
+        AUTH_RATE_LIMIT_PER_MINUTE: '1',
+        STUDENT_AUTH_RATE_LIMIT_PER_MINUTE: '2',
         ...env,
       }),
       checkDb: async () => 1,
@@ -45,6 +47,46 @@ describe('límite por IP', () => {
     const codes = [];
     for (let i = 0; i < 3; i++) codes.push((await get(app, '/auth/mock/users')).statusCode);
     expect(codes).toEqual([200, 200, 429]);
+  });
+
+  it('con sesión cuenta por usuario: compartir la IP no bloquea a los demás', async () => {
+    const app = await server();
+    // Rol operador en una ruta de estudiante: responde 403 sin tocar la base.
+    const as = async (userId: string) => {
+      const token = await signSession({ userId, role: 'operator' }, 'secreto-de-prueba');
+      const headers = { authorization: `Bearer ${token}` };
+      return (await get(app, '/menus/today', '10.0.0.1', headers)).statusCode;
+    };
+    for (let i = 0; i < 5; i++) expect(await as('ana')).toBe(403);
+    expect(await as('ana')).toBe(429);
+    expect(await as('beto')).toBe(403);
+  });
+
+  it('un token inventado no evita el límite por IP', async () => {
+    const app = await server();
+    const codes = [];
+    for (let i = 0; i < 6; i++) {
+      const token = await signSession({ userId: `u${i}`, role: 'student' }, 'otro-secreto');
+      const headers = { authorization: `Bearer ${token}` };
+      codes.push((await get(app, '/menus/today', '10.0.0.1', headers)).statusCode);
+    }
+    expect(codes).toEqual([401, 401, 401, 401, 401, 429]);
+  });
+
+  it('el ingreso de operador se cuenta por IP aunque cambie la sesión', async () => {
+    const app = await server();
+    const codes = [];
+    for (const userId of ['ana', 'beto']) {
+      const token = await signSession({ userId, role: 'student' }, 'secreto-de-prueba');
+      const res = await app.inject({
+        method: 'POST',
+        url: '/auth/operator/login',
+        headers: { authorization: `Bearer ${token}` },
+        payload: {},
+      });
+      codes.push(res.statusCode);
+    }
+    expect(codes).toEqual([400, 429]);
   });
 
   it('no limita la comprobación de salud', async () => {

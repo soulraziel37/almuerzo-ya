@@ -13,7 +13,7 @@ import Animated, {
 /** Pestañas de cada rol, en el orden de la barra. */
 const GROUPS = [
   ['menu', 'pedidos', 'perfil'],
-  ['escanear', 'stock', 'menus'],
+  ['escanear', 'refri', 'stock', 'menus'],
 ];
 
 const DURATION = 280;

@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, Text, type ColorValue } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 
 import { useWeek, type ManagedMenu } from '@/api/operator';
 import { GroupedList, ListRow } from '@/components/GroupedList';
@@ -8,14 +8,15 @@ import { Notice } from '@/components/Notice';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { Segmented } from '@/components/Segmented';
+import { StatusPill, type Tone } from '@/components/StatusPill';
 import { longDate, shortDay } from '@/lib/format';
 import { useSession } from '@/store/session';
 import { colors, type } from '@/theme/tokens';
 
-const states: Record<ManagedMenu['state'], { label: string; color: ColorValue }> = {
-  published: { label: 'Publicado', color: colors.accent },
-  scheduled: { label: 'Programado', color: colors.link },
-  closed: { label: 'Finalizado', color: colors.secondaryLabel },
+const states: Record<ManagedMenu['state'], { label: string; tone: Tone }> = {
+  published: { label: 'Publicado', tone: 'good' },
+  scheduled: { label: 'Programado', tone: 'info' },
+  closed: { label: 'Finalizado', tone: 'neutral' },
 };
 
 export default function WeekMenusScreen() {
@@ -64,7 +65,7 @@ export default function WeekMenusScreen() {
               key={slot}
               title={menu.name}
               subtitle={`Menú ${slot} · Stock ${menu.initialStock}`}
-              trailing={<Text style={[styles.state, { color: state.color }]}>{state.label}</Text>}
+              trailing={<StatusPill label={state.label} tone={state.tone} />}
               onPress={menu.state === 'closed' ? undefined : open}
             />
           );
@@ -82,6 +83,5 @@ export default function WeekMenusScreen() {
 }
 
 const styles = StyleSheet.create({
-  state: { ...type.footnote, fontWeight: '600' },
   value: { ...type.body, color: colors.secondaryLabel },
 });

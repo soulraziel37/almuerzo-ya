@@ -6,6 +6,8 @@ import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { api, ApiError } from '@/api/client';
 import { useMockUsers } from '@/api/queries';
 import type { Session } from '@/api/types';
+import { Backdrop } from '@/components/Backdrop';
+import { BrandMark } from '@/components/BrandMark';
 import { GroupedList, ListRow } from '@/components/GroupedList';
 import { Notice } from '@/components/Notice';
 import { PrimaryButton } from '@/components/PrimaryButton';
@@ -21,15 +23,25 @@ export default function Login() {
   const [role, setRole] = useState<(typeof roles)[number]>('Estudiante');
 
   return (
-    <Screen title="Almuerzo Ya" tabbed={false}>
-      <Text style={styles.subtitle}>
-        Reserva, paga y retira tu almuerzo con un código QR. Sin filas.
-      </Text>
+    <Screen backdrop={<Backdrop />}>
+      <View style={styles.hero}>
+        <BrandMark />
+        <View style={styles.heroTexts}>
+          <Text accessibilityRole="header" style={styles.title}>
+            Almuerzo Ya
+          </Text>
+          <Text style={styles.subtitle}>
+            Reserva, paga y retira tu almuerzo con un código QR. Sin filas.
+          </Text>
+        </View>
+      </View>
       <Segmented options={roles} value={role} onChange={setRole} accessibilityLabel="Tipo de acceso" />
       {role === 'Estudiante' ? <StudentLogin /> : <OperatorLogin />}
-      <Text accessibilityRole="link" style={styles.link} onPress={() => router.push('/muestra')}>
-        Ver componentes
-      </Text>
+      {__DEV__ ? (
+        <Text accessibilityRole="link" style={styles.link} onPress={() => router.push('/muestra')}>
+          Ver componentes
+        </Text>
+      ) : null}
     </Screen>
   );
 }
@@ -75,7 +87,12 @@ function StudentLogin() {
 
   return (
     <>
-      <Notice>Entra con tu cuenta universitaria.</Notice>
+      <GroupedList>
+        <ListRow
+          title="Entra con tu cuenta universitaria"
+          subtitle="Te llevaremos al inicio de sesión de Microsoft."
+        />
+      </GroupedList>
       <PrimaryButton
         title="Iniciar con Microsoft"
         loading={users.isFetching || login.isPending}
@@ -157,6 +174,9 @@ function OperatorLogin() {
 }
 
 const styles = StyleSheet.create({
+  hero: { paddingTop: 64, paddingBottom: spacing.md, gap: spacing.lg },
+  heroTexts: { gap: spacing.xs },
+  title: { ...type.largeTitle, color: colors.label },
   subtitle: { ...type.body, color: colors.secondaryLabel },
   input: {
     ...type.body,

@@ -1,4 +1,5 @@
-import type { OrderStatus } from '@/api/types';
+import type { Order, OrderStatus } from '@/api/types';
+import type { Tone } from '@/components/StatusPill';
 
 const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 const months = [
@@ -27,10 +28,22 @@ export function lunches(count: number): string {
   return `${count} ${count === 1 ? 'almuerzo' : 'almuerzos'}`;
 }
 
-export const orderStatus: Record<OrderStatus, string> = {
+const orderStatus: Record<OrderStatus, string> = {
   pending_payment: 'Pendiente de pago',
   paid: 'Listo para retirar',
   delivered: 'Entregado',
   cancelled: 'Cancelado',
   expired: 'Expirado',
 };
+
+/** Tono de la etiqueta de estado de un pedido. */
+export function orderTone(order: Pick<Order, 'status' | 'wasPaid'>): Tone {
+  if (order.status === 'paid') return 'good';
+  if (order.status === 'pending_payment') return 'warning';
+  if (order.status === 'expired' && order.wasPaid) return 'danger';
+  return 'neutral';
+}
+
+export function orderStatusLabel(order: Pick<Order, 'status' | 'wasPaid'>): string {
+  return order.status === 'expired' && order.wasPaid ? 'No retirado' : orderStatus[order.status];
+}

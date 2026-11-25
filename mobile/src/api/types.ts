@@ -13,6 +13,8 @@ export type Menu = {
   priceClp: number;
   salesOpen: boolean;
   photoUrl: string | null;
+  /** Unidades publicadas para el día. */
+  stock: number;
   available: number;
 };
 
@@ -22,6 +24,9 @@ export type TodayMenu = {
   cutoff: string;
   serviceFeeClp: number;
   maxPerMenu: number;
+  maxPerDay: number;
+  /** Almuerzos que el estudiante todavía puede reservar hoy. */
+  remainingToday: number;
   menus: Menu[];
 };
 
@@ -29,6 +34,8 @@ export type PickupSlot = {
   id: string;
   time: string;
   endTime: string;
+  capacity: number;
+  /** Cupos libres, en almuerzos. */
   remaining: number;
   available: boolean;
 };
@@ -45,6 +52,8 @@ export type Order = {
   /** Contenido del QR; solo en el detalle de un pedido pagado. */
   qrToken?: string | null;
   totalClp: number;
+  /** Un pedido `expired` con pago es uno que no se retiró. */
+  wasPaid: boolean;
   createdAt: string;
   expiresAt: string | null;
   pickup: { date: string; time: string; endTime: string };

@@ -1,4 +1,5 @@
 import Constants from 'expo-constants';
+import { Platform } from 'react-native';
 
 import { useDemo } from '@/store/demo';
 import { useSession } from '@/store/session';
@@ -9,7 +10,11 @@ import { useSession } from '@/store/session';
  */
 function resolveApiUrl(): string {
   if (process.env.EXPO_PUBLIC_API_URL) return process.env.EXPO_PUBLIC_API_URL;
-  const host = Constants.expoConfig?.hostUri?.split(':')[0];
+  // En web se usa la dirección de la página: `hostUri` es `localhost` aunque se abra por la IP.
+  const host =
+    Platform.OS === 'web'
+      ? globalThis.location?.hostname
+      : Constants.expoConfig?.hostUri?.split(':')[0];
   return `http://${host ?? 'localhost'}:3000`;
 }
 

@@ -2,7 +2,7 @@ import { SymbolView } from 'expo-symbols';
 import { Children, isValidElement, type PropsWithChildren, type ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { colors, radius, size, spacing, type } from '@/theme/tokens';
+import { colors, radius, shadow, size, spacing, type } from '@/theme/tokens';
 
 type GroupedListProps = PropsWithChildren<{ header?: string; footer?: string }>;
 
@@ -33,6 +33,8 @@ export function GroupedList({ header, footer, children }: GroupedListProps) {
 type ListRowProps = {
   title: string;
   subtitle?: string;
+  /** Miniatura o ícono al inicio. */
+  leading?: ReactNode;
   trailing?: ReactNode;
   /** Si se entrega, la fila es presionable y muestra el indicador de avance. */
   onPress?: () => void;
@@ -40,10 +42,11 @@ type ListRowProps = {
   selected?: boolean;
 };
 
-export function ListRow({ title, subtitle, trailing, onPress, selected }: ListRowProps) {
+export function ListRow({ title, subtitle, leading, trailing, onPress, selected }: ListRowProps) {
   const isPlainText = isValidElement(trailing) && trailing.type === Text;
   const content = (
     <>
+      {leading}
       <View style={styles.texts}>
         <Text style={styles.title}>{title}</Text>
         {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
@@ -83,7 +86,14 @@ const styles = StyleSheet.create({
   section: { gap: spacing.sm },
   header: { ...type.footnote, color: colors.secondaryLabel, paddingHorizontal: spacing.lg },
   footer: { ...type.footnote, color: colors.secondaryLabel, paddingHorizontal: spacing.lg },
-  card: { backgroundColor: colors.card, borderRadius: radius.card, overflow: 'hidden' },
+  card: {
+    backgroundColor: colors.card,
+    borderRadius: radius.card,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.separator,
+    overflow: 'hidden',
+    boxShadow: shadow.card,
+  },
   separator: {
     height: StyleSheet.hairlineWidth,
     marginLeft: spacing.lg,

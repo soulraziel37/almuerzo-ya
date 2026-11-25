@@ -4,7 +4,7 @@ import { requireSession } from '../lib/auth';
 import { AppError } from '../lib/errors';
 import { readPhoto } from '../lib/uploads';
 import type { ServerDeps } from '../server';
-import { daySummary, deliverOrder, verifyOrder } from '../services/delivery';
+import { daySummary, deliverOrder, fridgeTrays, openFridge, verifyOrder } from '../services/delivery';
 import {
   closeDay,
   createMenu,
@@ -16,6 +16,13 @@ import {
 import { expireOrders } from '../services/orders';
 
 const idParams = z.object({ id: z.uuid() });
+
+const codeOrToken = z
+  .object({
+    token: z.string().max(500).optional(),
+    code: z.string().max(20).optional(),
+  })
+  .refine((v) => !!v.token !== !!v.code);
 
 const menuFields = z.object({
   name: z.string().trim().min(3).max(80),
@@ -49,13 +56,7 @@ export function operatorRoutes(app: FastifyInstance, deps: ServerDeps) {
 
   app.post('/operator/verify', async (request) => {
     await operator(request);
-    const input = z
-      .object({
-        token: z.string().max(500).optional(),
-        code: z.string().max(20).optional(),
-      })
-      .refine((v) => !!v.token !== !!v.code)
-      .parse(request.body);
+    const input = codeOrToken.parse(request.body);
     await sweep();
     return verifyOrder(prisma, config, input, clock());
   });
@@ -64,6 +65,18 @@ export function operatorRoutes(app: FastifyInstance, deps: ServerDeps) {
     const { userId } = await operator(request);
     const { id } = idParams.parse(request.params);
     return deliverOrder(prisma, userId, id, clock());
+  });
+
+  app.get('/operator/fridge', async (request) => {
+    await operator(request);
+    return fridgeTrays(prisma, clock());
+  });
+
+  app.post('/operator/fridge/open', async (request) => {
+    const { userId } = await operator(request);
+    const input = codeOrToken.parse(request.body);
+    await sweep();
+    return openFridge(prisma, config, userId, input, clock());
   });
 
   app.get('/operator/stock', async (request) => {

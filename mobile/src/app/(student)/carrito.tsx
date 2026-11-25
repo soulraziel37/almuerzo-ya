@@ -1,6 +1,8 @@
+import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { StyleSheet, Text } from 'react-native';
 
+import { API_URL } from '@/api/client';
 import { GroupedList, ListRow } from '@/components/GroupedList';
 import { Notice } from '@/components/Notice';
 import { PrimaryButton } from '@/components/PrimaryButton';
@@ -9,10 +11,10 @@ import { Stepper } from '@/components/Stepper';
 import { clp, lunches } from '@/lib/format';
 import { useCart } from '@/store/cart';
 import { useCartLines } from '@/store/useCartLines';
-import { colors, type } from '@/theme/tokens';
+import { colors, radius, type } from '@/theme/tokens';
 
 export default function CartScreen() {
-  const { data, error, lines, count, subtotal, fee, total, exceeded } = useCartLines();
+  const { data, error, lines, count, subtotal, fee, total, exceeded, overDaily } = useCartLines();
   const setQty = useCart((s) => s.setQty);
 
   if (!data) {
@@ -43,11 +45,19 @@ export default function CartScreen() {
             key={menu.id}
             title={`Menú ${menu.slot}`}
             subtitle={`${menu.name} · ${clp(menu.priceClp)}`}
+            leading={
+              menu.photoUrl ? (
+                <Image source={`${API_URL}${menu.photoUrl}`} style={styles.thumb} contentFit="cover" />
+              ) : undefined
+            }
             trailing={
               <Stepper
                 value={qty}
                 onChange={(next) => setQty(data.date, menu.id, next)}
-                max={Math.max(qty, Math.min(data.maxPerMenu, menu.available))}
+                max={Math.max(
+                  qty,
+                  Math.min(data.maxPerMenu, menu.available, qty + data.remainingToday - count),
+                )}
                 label={`Menú ${menu.slot}`}
               />
             }
@@ -69,13 +79,18 @@ export default function CartScreen() {
             : `Las ventas del Menú ${menu.slot} están pausadas.`}
         </Notice>
       ))}
+      {overDaily ? (
+        <Notice error>
+          {`Hoy puedes reservar ${data.remainingToday} más (máximo ${data.maxPerDay} por día).`}
+        </Notice>
+      ) : null}
       {!data.reservationsOpen ? (
         <Notice error>{`Las reservas cerraron a las ${data.cutoff}.`}</Notice>
       ) : null}
 
       <PrimaryButton
         title={`Ir a pagar · ${lunches(count)}`}
-        disabled={exceeded.length > 0 || !data.reservationsOpen}
+        disabled={exceeded.length > 0 || overDaily || !data.reservationsOpen}
         onPress={() => router.push('/checkout')}
       />
     </Screen>
@@ -84,6 +99,7 @@ export default function CartScreen() {
 
 const styles = StyleSheet.create({
   emptyTitle: { ...type.title2, color: colors.label, textAlign: 'center' },
+  thumb: { width: 52, height: 52, borderRadius: radius.tile },
   amount: { ...type.body, color: colors.secondaryLabel },
   total: { ...type.headline, color: colors.label },
 });

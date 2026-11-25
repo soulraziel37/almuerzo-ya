@@ -1,10 +1,10 @@
 import { randomBytes, randomInt } from 'node:crypto';
 import type { Config } from '../config';
 import { Prisma, type PaymentMethod, type PrismaClient } from '../generated/prisma/client';
-import { localDate, localTime } from '../lib/dates';
+import { dateColumn, localDate, localTime } from '../lib/dates';
 import { AppError } from '../lib/errors';
 import { hashQr, signQr } from '../lib/qr';
-import { reservationsOpen } from './menus';
+import { lunchesToday, reservationsOpen } from './menus';
 
 export interface NewOrder {
   items: { menuId: string; qty: number }[];
@@ -28,6 +28,8 @@ export function serializeOrder(order: OrderRecord, config: Config) {
     paymentMethod: order.paymentMethod,
     totalClp: order.totalClp,
     createdAt: order.createdAt.toISOString(),
+    /** Distingue un pedido pagado y no retirado de uno que venció sin pagarse. */
+    wasPaid: order.paidAt !== null,
     expiresAt:
       order.status === 'pending_payment'
         ? new Date(order.createdAt.getTime() + config.ORDER_TTL_MINUTES * 60_000).toISOString()
@@ -40,7 +42,7 @@ export function serializeOrder(order: OrderRecord, config: Config) {
     items: order.items.map((item) => ({
       menuId: item.menuId,
       slot: item.menu.slot,
-      name: item.menu.name,
+      name: item.menuName,
       qty: item.qty,
       unitPriceClp: item.unitPriceClp,
     })),
@@ -82,11 +84,26 @@ export async function createOrder(
   }
 
   const today = localDate(now);
+  const count = items.reduce((sum, item) => sum + item.qty, 0);
 
   const reserve = () =>
     prisma.$transaction(async (tx) => {
+      // Los pedidos de un mismo estudiante se crean de a uno: así el máximo diario no se
+      // puede saltar enviando varios a la vez.
+      await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${userId}::uuid FOR NO KEY UPDATE`;
+      const left = config.MAX_LUNCHES_PER_DAY - (await lunchesToday(tx, userId, today));
+      if (count > left) {
+        throw new AppError(
+          409,
+          'max_per_day',
+          left > 0
+            ? `Hoy puedes reservar hasta ${left} más (máximo ${config.MAX_LUNCHES_PER_DAY} por día).`
+            : `Ya alcanzaste el máximo de ${config.MAX_LUNCHES_PER_DAY} almuerzos por día.`,
+        );
+      }
+
       let totalClp = config.SERVICE_FEE_CLP;
-      const lines: { menuId: string; qty: number; unitPriceClp: number }[] = [];
+      const lines: { menuId: string; menuName: string; qty: number; unitPriceClp: number }[] = [];
 
       for (const { menuId, qty } of items) {
         const updated = await tx.$executeRaw`
@@ -105,20 +122,20 @@ export async function createOrder(
           );
         }
         const menu = await tx.menu.findUniqueOrThrow({ where: { id: menuId } });
-        lines.push({ menuId, qty, unitPriceClp: menu.priceClp });
+        lines.push({ menuId, menuName: menu.name, qty, unitPriceClp: menu.priceClp });
         totalClp += menu.priceClp * qty;
       }
 
       // Con la ventana activa tampoco se aceptan franjas que ya empezaron.
       const startsAfter = config.ENFORCE_RESERVATION_WINDOW ? now : new Date(0);
       const booked = await tx.$executeRaw`
-        UPDATE "PickupSlot" SET "bookedCount" = "bookedCount" + 1
+        UPDATE "PickupSlot" SET "bookedCount" = "bookedCount" + ${count}
         WHERE "id" = ${input.pickupSlotId}::uuid
           AND "date" = ${today}::date
           AND "startsAt" > ${startsAfter}
-          AND "bookedCount" < "capacity"`;
+          AND "bookedCount" + ${count} <= "capacity"`;
       if (booked !== 1) {
-        throw new AppError(409, 'slot_full', 'Esa hora de retiro ya no tiene cupos.');
+        throw new AppError(409, 'slot_full', 'Esa hora de retiro no tiene cupos para tu pedido.');
       }
 
       return tx.order.create({
@@ -175,23 +192,34 @@ export function releaseOrder(
     }
     await tx.pickupSlot.update({
       where: { id: order.pickupSlotId },
-      data: { bookedCount: { decrement: 1 } },
+      data: { bookedCount: { decrement: order.items.reduce((sum, i) => sum + i.qty, 0) } },
     });
     return true;
   });
 }
 
-/** Libera los pedidos que no se pagaron a tiempo. Devuelve cuántos expiraron. */
+/**
+ * Libera los pedidos que no se pagaron a tiempo y devuelve cuántos fueron. También vence los
+ * pagados de días anteriores que no se retiraron, aunque nadie haya cerrado el día (§4).
+ */
 export async function expireOrders(prisma: PrismaClient, config: Config, now: Date) {
+  const today = dateColumn(localDate(now));
   const limit = new Date(now.getTime() - config.ORDER_TTL_MINUTES * 60_000);
   const stale = await prisma.order.findMany({
-    where: { status: 'pending_payment', createdAt: { lte: limit } },
+    where: {
+      status: 'pending_payment',
+      OR: [{ createdAt: { lte: limit } }, { pickupSlot: { date: { lt: today } } }],
+    },
     select: { id: true },
   });
   let expired = 0;
   for (const { id } of stale) {
     if (await releaseOrder(prisma, id, 'expired')) expired++;
   }
+  await prisma.order.updateMany({
+    where: { status: 'paid', pickupSlot: { date: { lt: today } } },
+    data: { status: 'expired' },
+  });
   return expired;
 }
 

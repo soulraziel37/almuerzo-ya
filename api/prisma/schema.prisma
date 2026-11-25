@@ -80,6 +80,7 @@ model PickupSlot {
   startsAt    DateTime @db.Timestamptz(3)
   endsAt      DateTime @db.Timestamptz(3)
   capacity    Int
+  // Almuerzos (no pedidos) reservados para la franja.
   bookedCount Int      @default(0)
   orders      Order[]
 
@@ -115,6 +116,8 @@ model OrderItem {
   order        Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
   menuId       String @db.Uuid
   menu         Menu   @relation(fields: [menuId], references: [id])
+  // Copia del nombre al comprar: editar el plato no cambia los pedidos existentes.
+  menuName     String
   qty          Int
   unitPriceClp Int
 

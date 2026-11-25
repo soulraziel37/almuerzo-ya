@@ -1,12 +1,12 @@
 import { readFile } from 'node:fs/promises';
 import bcrypt from 'bcryptjs';
-import { atLocalTime, localDate, workWeek } from '../src/lib/dates';
+import { localDate, workWeek } from '../src/lib/dates';
 import { createPrisma } from '../src/lib/db';
 import { publishPhoto } from '../src/lib/uploads';
+import { ensureSlots } from '../src/services/slots';
 
-// Valores de prueba: precio y capacidad están [POR DEFINIR] con el casino (§4).
+// Valores de prueba: el precio está [POR DEFINIR] con el casino (§4).
 const PRICE_CLP = 3500;
-const SLOT_CAPACITY = 40;
 const INITIAL_STOCK = 60;
 
 /** `photo` es un archivo de `prisma/photos/` (créditos en `CREDITOS.md`). */
@@ -41,9 +41,6 @@ async function examplePhoto(photo: string): Promise<string> {
   const data = await readFile(new URL(`./photos/${photo}.jpg`, import.meta.url));
   return publishPhoto('uploads', data);
 }
-
-// 6 franjas de 30 minutos entre las 12:00 y las 15:00.
-const slotEdges = ['12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00'];
 
 const prisma = createPrisma();
 const today = localDate();
@@ -83,19 +80,7 @@ for (const [dayIndex, date] of dates.entries()) {
     });
   }
 
-  for (let i = 0; i < slotEdges.length - 1; i++) {
-    const startsAt = atLocalTime(date, slotEdges[i]!);
-    await prisma.pickupSlot.upsert({
-      where: { date_startsAt: { date: day, startsAt } },
-      update: {},
-      create: {
-        date: day,
-        startsAt,
-        endsAt: atLocalTime(date, slotEdges[i + 1]!),
-        capacity: SLOT_CAPACITY,
-      },
-    });
-  }
+  await ensureSlots(prisma, date);
 }
 
 // Usuarios de prueba (AUTH_MODE=mock). La clave del operador por defecto es pública:

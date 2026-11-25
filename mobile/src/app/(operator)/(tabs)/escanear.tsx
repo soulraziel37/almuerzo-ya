@@ -18,13 +18,14 @@ import { useSummary } from '@/api/operator';
 import { Glass } from '@/components/Glass';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TabSlide } from '@/components/TabSlide';
-import { radius, scanner, size, spacing, type } from '@/theme/tokens';
-import { useTabBarClearance } from '@/theme/useTabBarClearance';
+import { maxWidth, radius, scanner, size, spacing, type } from '@/theme/tokens';
+import { useTabBarClearance, useWebTabsOnTop } from '@/theme/useTabBarClearance';
 
 /** Escáner del operador, según `docs/design/Escanear.dc.html`. */
 export default function ScanScreen() {
   const summary = useSummary();
   const clearance = useTabBarClearance();
+  const tabsOnTop = useWebTabsOnTop();
   const [permission, requestPermission] = useCameraPermissions();
   const [focused, setFocused] = useState(false);
   const [torch, setTorch] = useState(false);
@@ -86,7 +87,7 @@ export default function ScanScreen() {
               Va en un View aparte porque KeyboardAvoidingView reemplaza su propio paddingBottom. */}
           <View style={[styles.safeArea, { paddingBottom: typing ? 0 : clearance }]}>
             <KeyboardAvoidingView
-              style={styles.content}
+              style={[styles.content, tabsOnTop && styles.belowTabs]}
               behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
               <View style={styles.topRow}>
                 <Glass tone="dark" style={styles.station}>
@@ -226,11 +227,15 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1 },
   content: {
     flex: 1,
+    width: '100%',
+    maxWidth: maxWidth.content,
+    alignSelf: 'center',
     paddingHorizontal: spacing.lg,
     gap: spacing.lg,
-    // En web, la tab bar de NativeTabs flota arriba.
-    paddingTop: Platform.OS === 'web' ? 76 : spacing.sm,
+    paddingTop: spacing.sm,
   },
+  // En web ancho, la tab bar de NativeTabs flota arriba.
+  belowTabs: { paddingTop: 84 },
   topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   station: {
     height: size.touch,

@@ -1,4 +1,4 @@
-# Demo publicada: API y base de datos en el plan gratuito de Render.
+# Demo publicada: app web, API y base de datos en el plan gratuito de Render.
 # La base gratuita expira 30 días después de crearla.
 databases:
   - name: almuerzo-ya-db
@@ -38,4 +38,26 @@ services:
       - key: DEMO_ACCESS_CODE
         sync: false
       - key: OPERATOR_PASSWORD
+        sync: false
+      # Dirección de la app web, sin / final: otros sitios no pueden llamar a la API.
+      - key: CORS_ORIGINS
+        sync: false
+
+  - type: web
+    name: almuerzo-ya
+    runtime: static
+    rootDir: mobile
+    buildCommand: npm ci && npx expo export --platform web
+    staticPublishPath: ./dist
+    autoDeploy: false
+    # La app es de una sola página: cualquier ruta abre index.html.
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # Dirección de la API. Queda fija al compilar: si cambia, hay que volver a desplegar.
+      - key: EXPO_PUBLIC_API_URL
         sync: false

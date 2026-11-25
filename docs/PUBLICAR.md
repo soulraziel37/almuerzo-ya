@@ -10,13 +10,22 @@ subidas se pierden al reiniciar y **la base de datos expira a los 30 días**.
 
 Crea un repositorio (puede ser privado) y sube este proyecto. `.env` no se sube.
 
-## 2. API en Render
+## 2. API y app web en Render
 
 1. **New → Blueprint** y elige el repositorio: lee `render.yaml`.
-2. Escribe `DEMO_ACCESS_CODE` y `OPERATOR_PASSWORD` (mínimo 8 caracteres, distintas).
+2. Escribe `DEMO_ACCESS_CODE` y `OPERATOR_PASSWORD` (mínimo 8 caracteres, distintas), y las
+   direcciones: `EXPO_PUBLIC_API_URL` = `https://almuerzo-ya-api.onrender.com` y
+   `CORS_ORIGINS` = `https://almuerzo-ya.onrender.com`, ambas sin `/` al final.
+   Si Render asigna otros nombres, corrígelas en **Environment** y vuelve a desplegar.
 3. Abre `https://TU-SERVICIO.onrender.com/health`: debe responder `ok`.
 4. Revisa en los logs que `remoteAddress` sea tu IP pública y no una de Render. Si no lo es,
    ajusta `TRUST_PROXY_HOPS`: de eso depende el límite por IP.
+
+5. Abre la app web y escribe la clave de demo al iniciar sesión. Con esto basta para mostrarla
+   en un navegador: los pasos 3 a 5 son solo para verla en un iPhone con Expo Go.
+
+> Antes de presentar, abre `/health` y espera a que responda `ok`: si la API estaba dormida,
+> la app muestra "Sin conexión" hasta que despierta.
 
 ## 3. Organización en Expo
 

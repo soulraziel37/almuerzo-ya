@@ -24,6 +24,7 @@ export default function OperatorLayout() {
           sheetCornerRadius: radius.sheet,
         }}
       />
+      <Stack.Screen name="totem" options={{ headerShown: false }} />
       <Stack.Screen name="menu-form" options={{ title: 'Menú' }} />
     </Stack>
   );

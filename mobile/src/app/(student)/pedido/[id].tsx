@@ -1,26 +1,26 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { useCancelOrder, useOrder, usePayOrder } from '@/api/queries';
+import { Bar } from '@/components/Bar';
+import { Confetti } from '@/components/Confetti';
 import { ConfirmButton } from '@/components/ConfirmButton';
 import { GroupedList, ListRow } from '@/components/GroupedList';
 import { Notice } from '@/components/Notice';
+import { OrderProgress } from '@/components/OrderProgress';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { QrTicket } from '@/components/QrTicket';
 import { Screen } from '@/components/Screen';
-import { clp, longDate, orderStatus } from '@/lib/format';
-import { colors, radius, spacing, type } from '@/theme/tokens';
+import type { OrderStatus } from '@/api/types';
+import { clp, longDate, orderStatusLabel } from '@/lib/format';
+import { pickupHint } from '@/lib/pickup';
+import { useNow } from '@/lib/useNow';
+import { brand, colors, radius, spacing, type } from '@/theme/tokens';
 
-/** Tiempo restante hasta `until`, como `14:05`. */
-function useCountdown(until: string | null | undefined) {
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(timer);
-  }, []);
-  if (!until) return null;
-  const seconds = Math.max(0, Math.round((Date.parse(until) - now) / 1000));
+/** Tiempo restante, como `14:05`. */
+function clock(ms: number): string {
+  const seconds = Math.max(0, Math.round(ms / 1000));
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
 }
 
@@ -29,7 +29,20 @@ export default function OrderScreen() {
   const { data: order, error } = useOrder(id);
   const cancel = useCancelOrder();
   const pay = usePayOrder();
-  const remaining = useCountdown(order?.expiresAt);
+  const now = useNow();
+  const [burst, setBurst] = useState(0);
+
+  // Celebra cuando el pedido avanza con la pantalla abierta, no al abrir uno ya listo.
+  const status = order?.status;
+  const previous = useRef<OrderStatus>(undefined);
+  useEffect(() => {
+    const before = previous.current;
+    previous.current = status;
+    const advanced =
+      (before === 'pending_payment' && status === 'paid') ||
+      (before === 'paid' && status === 'delivered');
+    if (advanced) setBurst((n) => n + 1);
+  }, [status]);
 
   if (!order) {
     return (
@@ -41,18 +54,42 @@ export default function OrderScreen() {
 
   const pending = order.status === 'pending_payment';
 
+  const closed = order.status === 'cancelled' || order.status === 'expired';
+  const left = order.expiresAt ? Date.parse(order.expiresAt) - now : 0;
+  const total = order.expiresAt ? Date.parse(order.expiresAt) - Date.parse(order.createdAt) : 1;
+
   return (
     <Screen>
-      <View style={styles.ticket}>
-        <Text style={[styles.status, pending && styles.pending]}>{orderStatus[order.status]}</Text>
-        {order.qrToken ? <QrTicket value={order.qrToken} /> : null}
+      <View style={[styles.ticket, closed && styles.ticketOff]}>
+        <View style={[styles.circle, styles.circleTop, closed && styles.circleTopOff]} />
+        <View style={[styles.circle, styles.circleBottom, closed && styles.circleBottomOff]} />
+
+        <Text accessibilityLiveRegion="polite" style={styles.status}>
+          {orderStatusLabel(order)}
+        </Text>
+        {closed ? null : (
+          <OrderProgress done={order.status === 'delivered' ? 3 : order.status === 'paid' ? 2 : 1} />
+        )}
+
+        {order.qrToken ? <QrTicket value={order.qrToken} code={order.shortCode} /> : null}
         <Text accessibilityLabel={`Código ${order.shortCode}`} style={styles.code}>
           {order.shortCode}
         </Text>
-        {pending ? <Text style={styles.detail}>Reservado por {remaining} minutos más</Text> : null}
-        {order.qrToken ? (
-          <Text style={styles.detail}>Sube el brillo de la pantalla para escanear más rápido.</Text>
+
+        {pending ? (
+          <View style={styles.timer}>
+            <Text style={styles.hint}>Reservado por {clock(left)} minutos más</Text>
+            <Bar value={left / total} color={brand.text} track={brand.track} />
+          </View>
         ) : null}
+        {order.status === 'paid' ? (
+          <>
+            <Text style={styles.hintStrong}>{pickupHint(order, now)}</Text>
+            <Text style={styles.hint}>Toca el código para ampliarlo.</Text>
+          </>
+        ) : null}
+        {order.status === 'delivered' ? <Text style={styles.hintStrong}>¡Buen provecho!</Text> : null}
+        <Confetti burst={burst} />
       </View>
 
       <GroupedList header="Retiro">
@@ -75,7 +112,11 @@ export default function OrderScreen() {
       </GroupedList>
 
       {order.status === 'expired' ? (
-        <Notice>Se acabó el tiempo para pagar. El stock quedó disponible nuevamente.</Notice>
+        <Notice>
+          {order.wasPaid
+            ? 'Este pedido no se retiró a tiempo y su código ya no es válido. Consulta en el casino.'
+            : 'Se acabó el tiempo para pagar. El stock quedó disponible nuevamente.'}
+        </Notice>
       ) : null}
       {pay.error ? <Notice error>{pay.error.message}</Notice> : null}
       {cancel.error ? <Notice error>{cancel.error.message}</Notice> : null}
@@ -108,15 +149,24 @@ export default function OrderScreen() {
 
 const styles = StyleSheet.create({
   ticket: {
-    backgroundColor: colors.card,
-    borderRadius: radius.card,
+    backgroundColor: brand.base,
+    borderRadius: 32,
     padding: spacing.xl,
     alignItems: 'center',
-    gap: spacing.sm,
+    gap: spacing.lg,
+    overflow: 'hidden',
   },
-  status: { ...type.headline, color: colors.accent },
-  pending: { color: colors.warning },
-  code: { ...type.largeTitle, color: colors.label, fontVariant: ['tabular-nums'] },
+  ticketOff: { backgroundColor: brand.muted },
+  circle: { position: 'absolute', width: 320, height: 320, borderRadius: radius.pill },
+  circleTop: { right: -130, top: -120, backgroundColor: brand.light },
+  circleTopOff: { backgroundColor: brand.mutedLight },
+  circleBottom: { left: -150, bottom: -140, backgroundColor: brand.deep },
+  circleBottomOff: { backgroundColor: brand.mutedDeep },
+  status: { ...type.title2, color: brand.text },
+  code: { ...type.largeTitle, color: brand.text, fontVariant: ['tabular-nums'] },
+  timer: { alignSelf: 'stretch', alignItems: 'center', gap: spacing.sm },
+  hint: { ...type.subhead, color: brand.secondaryText, textAlign: 'center' },
+  hintStrong: { ...type.headline, color: brand.text, textAlign: 'center' },
   detail: { ...type.subhead, color: colors.secondaryLabel },
   total: { ...type.headline, color: colors.label },
 });

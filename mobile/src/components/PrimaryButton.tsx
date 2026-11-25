@@ -1,15 +1,18 @@
-import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text } from 'react-native';
 
+import { PressableScale } from '@/components/PressableScale';
 import { colors, radius, size, spacing, type } from '@/theme/tokens';
 
 type PrimaryButtonProps = {
   title: string;
   onPress: () => void;
-  /** `soft` para la acción secundaria. */
-  variant?: 'filled' | 'soft';
+  /** `soft` para la acción secundaria, `danger` para las que no se deshacen. */
+  variant?: 'filled' | 'soft' | 'danger';
   disabled?: boolean;
   loading?: boolean;
 };
+
+const TEXT = { filled: colors.onAccent, soft: colors.accent, danger: colors.danger } as const;
 
 /** Botón en cápsula de 52 pt. */
 export function PrimaryButton({
@@ -20,19 +23,20 @@ export function PrimaryButton({
   loading = false,
 }: PrimaryButtonProps) {
   const inactive = disabled || loading;
-  const textColor = variant === 'filled' ? colors.onAccent : colors.accent;
+  // Deshabilitado es gris: un verde atenuado se confunde con un botón activo.
+  const textColor = disabled ? colors.secondaryLabel : TEXT[variant];
 
   return (
-    <Pressable
+    <PressableScale
       accessibilityRole="button"
       accessibilityLabel={title}
       accessibilityState={{ disabled: inactive, busy: loading }}
       disabled={inactive}
       onPress={onPress}
-      style={({ pressed }) => [
+      style={[
         styles.button,
         variant === 'soft' && styles.soft,
-        pressed && styles.pressed,
+        variant === 'danger' && styles.danger,
         disabled && styles.disabled,
       ]}>
       {loading ? (
@@ -40,7 +44,7 @@ export function PrimaryButton({
       ) : (
         <Text style={[styles.text, { color: textColor }]}>{title}</Text>
       )}
-    </Pressable>
+    </PressableScale>
   );
 }
 
@@ -54,7 +58,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   soft: { backgroundColor: colors.accentSoft },
-  pressed: { opacity: 0.7 },
-  disabled: { opacity: 0.4 },
+  danger: { backgroundColor: colors.dangerSoft },
+  disabled: { backgroundColor: colors.neutralSoft },
   text: { ...type.headline },
 });

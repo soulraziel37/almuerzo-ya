@@ -20,7 +20,12 @@ const ticket = (order: Record_) => ({
     time: localTime(order.pickupSlot.startsAt),
     endTime: localTime(order.pickupSlot.endsAt),
   },
-  items: order.items.map((i) => ({ slot: i.menu.slot, name: i.menu.name, qty: i.qty })),
+  items: order.items.map((i) => ({
+    slot: i.menu.slot,
+    name: i.menuName,
+    qty: i.qty,
+    photoUrl: i.menu.photoUrl,
+  })),
 });
 
 export type Verification =
@@ -45,7 +50,11 @@ function evaluate(order: Record_, today: string): Verification {
   }
   if (order.status === 'pending_payment') return invalid('El pedido no está pagado.');
   if (order.status === 'cancelled') return invalid('El pedido fue cancelado.');
-  if (order.status === 'expired') return invalid('El pedido expiró.');
+  if (order.status === 'expired') {
+    return invalid(
+      order.paidAt ? 'El pedido no se retiró y el día ya se cerró.' : 'El pedido expiró.',
+    );
+  }
   return { result: 'valid', order: ticket(order) };
 }
 
@@ -102,6 +111,44 @@ export async function deliverOrder(
     );
   }
   return { deliveredAt: localTime(now) };
+}
+
+/**
+ * Bandejas del refrigerador: pedidos pagados de hoy sin retirar. La etiqueta lleva solo el
+ * final del código, porque con el código completo cualquiera podría abrir la puerta.
+ */
+export async function fridgeTrays(prisma: PrismaClient, now: Date) {
+  const orders = await prisma.order.findMany({
+    where: { status: 'paid', pickupSlot: { date: dateColumn(localDate(now)) } },
+    include,
+    orderBy: [{ pickupSlot: { startsAt: 'asc' } }, { paidAt: 'asc' }],
+  });
+  return orders.map((order) => {
+    const { shortCode, ...tray } = ticket(order);
+    return { ...tray, codeEnd: shortCode.slice(-2) };
+  });
+}
+
+/** Abre la puerta con el QR o el código del estudiante: validar y entregar en un paso. */
+export async function openFridge(
+  prisma: PrismaClient,
+  config: Config,
+  operatorId: string,
+  input: { token?: string; code?: string },
+  now: Date,
+) {
+  const check = await verifyOrder(prisma, config, input, now);
+  if (check.result !== 'valid') return { opened: false as const, message: check.message };
+  try {
+    await deliverOrder(prisma, operatorId, check.order.id, now);
+  } catch (error) {
+    // Otro lector lo entregó entre la validación y el canje.
+    if (error instanceof AppError && error.statusCode === 409) {
+      return { opened: false as const, message: error.message };
+    }
+    throw error;
+  }
+  return { opened: true as const, order: check.order };
 }
 
 export async function daySummary(prisma: PrismaClient, now: Date) {

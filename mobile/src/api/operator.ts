@@ -9,8 +9,13 @@ export type Ticket = {
   shortCode: string;
   student: string;
   pickup: { time: string; endTime: string };
-  items: { slot: number; name: string; qty: number }[];
+  items: { slot: number; name: string; qty: number; photoUrl: string | null }[];
 };
+
+/** Bandeja del refrigerador: la etiqueta solo lleva el final del código. */
+export type Tray = Omit<Ticket, 'shortCode'> & { codeEnd: string };
+
+export type FridgeResult = { opened: true; order: Ticket } | { opened: false; message: string };
 
 export type Verification =
   | { result: 'valid'; order: Ticket }
@@ -55,6 +60,13 @@ export const useSummary = () =>
     refetchInterval: POLL_MS,
   });
 
+export const useFridge = () =>
+  useQuery({
+    queryKey: ['fridge'],
+    queryFn: () => api<Tray[]>('/operator/fridge'),
+    refetchInterval: POLL_MS,
+  });
+
 export const useStock = () =>
   useQuery({
     queryKey: ['stock'],
@@ -85,7 +97,7 @@ function useOperatorMutation<Input, Output>(run: (input: Input) => Promise<Outpu
     mutationFn: run,
     onSettled: () =>
       Promise.all(
-        ['summary', 'stock', 'week'].map((key) => client.invalidateQueries({ queryKey: [key] })),
+        ['summary', 'stock', 'week', 'fridge'].map((key) => client.invalidateQueries({ queryKey: [key] })),
       ),
   });
 }
@@ -93,6 +105,11 @@ function useOperatorMutation<Input, Output>(run: (input: Input) => Promise<Outpu
 export const useDeliver = () =>
   useOperatorMutation((id: string) =>
     api<{ deliveredAt: string }>(`/operator/orders/${id}/deliver`, { body: {} }),
+  );
+
+export const useOpenFridge = () =>
+  useOperatorMutation((input: { token: string } | { code: string }) =>
+    api<FridgeResult>('/operator/fridge/open', { body: input }),
   );
 
 export const useUpdateStock = () =>

@@ -145,6 +145,65 @@ describe('validar y entregar', () => {
   });
 });
 
+describe('refrigerador', () => {
+  const trays = async () =>
+    (await app.inject({ url: '/operator/fridge', headers: operator })).json() as {
+      id: string;
+      student: string;
+      codeEnd: string;
+    }[];
+  const open = async (payload: object) => (await post('/operator/fridge/open', payload)).json();
+
+  it('muestra solo los pagados de hoy y no revela el código completo', async () => {
+    const paid = await paidOrder(2);
+    await reserve();
+    const list = await trays();
+    expect(list).toHaveLength(1);
+    expect(list[0]).toMatchObject({
+      id: paid.id,
+      student: 'ana',
+      codeEnd: paid.shortCode.slice(-2),
+      items: [{ slot: 1, name: 'Pollo con arroz', qty: 2, photoUrl: null }],
+    });
+    expect(JSON.stringify(list)).not.toContain(paid.shortCode);
+
+    clock = atLocalTime('2026-11-25', '09:00');
+    expect(await trays()).toEqual([]);
+  });
+
+  it('el QR abre una sola vez, aunque se lea dos veces a la vez', async () => {
+    const paid = await paidOrder();
+    const results = await Promise.all([
+      open({ token: paid.qrToken }),
+      open({ token: paid.qrToken }),
+    ]);
+    expect(results.filter((r) => r.opened)).toHaveLength(1);
+    expect(results.find((r) => r.opened)).toMatchObject({ order: { id: paid.id } });
+    expect(results.find((r) => !r.opened).message).toContain('entreg');
+    expect(await trays()).toEqual([]);
+    const saved = await prisma.order.findUniqueOrThrow({ where: { id: paid.id } });
+    expect(saved).toMatchObject({ status: 'delivered' });
+    expect(saved.deliveredById).not.toBeNull();
+  });
+
+  it('no abre con un pedido sin pagar, un QR alterado ni una sesión de estudiante', async () => {
+    const pending = await reserve();
+    expect(await open({ code: pending.shortCode })).toEqual({
+      opened: false,
+      message: 'El pedido no está pagado.',
+    });
+    const paid = await paidOrder();
+    expect((await open({ token: `${paid.qrToken}x` })).opened).toBe(false);
+    const asStudent = await post('/operator/fridge/open', { token: paid.qrToken }, student);
+    expect(asStudent.statusCode).toBe(403);
+    expect((await app.inject({ url: '/operator/fridge', headers: student })).statusCode).toBe(403);
+    expect(await trays()).toHaveLength(1);
+
+    // El código escrito también abre.
+    expect((await open({ code: paid.shortCode.toLowerCase() })).opened).toBe(true);
+  });
+});
+
 describe('stock y cierre', () => {
   const patch = (payload: object) =>
     app.inject({
@@ -180,6 +239,8 @@ describe('stock y cierre', () => {
     expect(orders.every((o) => o.status === 'expired')).toBe(true);
     const menu = await prisma.menu.findUniqueOrThrow({ where: { id: menuId } });
     expect(menu).toMatchObject({ status: 'closed', reservedCount: 0, soldCount: 2 });
+    expect((await verify({ code: paid.shortCode })).message).toContain('no se retiró');
+    expect((await verify({ code: pending.shortCode })).message).toBe('El pedido expiró.');
     expect((await patch({ salesOpen: true })).statusCode).toBe(409);
   });
 });
@@ -199,7 +260,7 @@ describe('menús de la semana', () => {
     expect(week.json().days[2].menus[0].name).toBe('Charquicán');
   });
 
-  it('edita el plato sin cambiar el total de pedidos existentes', async () => {
+  it('edita el plato sin cambiar el total ni el nombre en pedidos existentes', async () => {
     const order = await paidOrder();
     const res = await app.inject({
       method: 'PUT',
@@ -210,6 +271,9 @@ describe('menús de la semana', () => {
     expect(res.json()).toMatchObject({ name: 'Charquicán', priceClp: 9000 });
     const saved = await prisma.order.findUniqueOrThrow({ where: { id: order.id } });
     expect(saved.totalClp).toBe(3500);
+    const detail = await app.inject({ url: `/orders/${order.id}`, headers: student });
+    expect(detail.json().items[0].name).toBe('Pollo con arroz');
+    expect((await verify({ code: order.shortCode })).order.items[0].name).toBe('Pollo con arroz');
   });
 
   it('guarda la foto JPEG, la sirve y rechaza otros archivos', async () => {

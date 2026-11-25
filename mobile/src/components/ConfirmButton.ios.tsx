@@ -47,7 +47,7 @@ export function ConfirmButton({
               buttonStyle('bordered'),
               buttonBorderShape('capsule'),
               controlSize('large'),
-              tint(theme.accent),
+              tint(theme.danger),
               disabled(loading || isDisabled),
             ]}>
             <Text

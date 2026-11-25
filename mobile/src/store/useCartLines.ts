@@ -18,5 +18,7 @@ export function useCartLines() {
   // El stock pudo bajar después de agregar al carrito.
   const exceeded = lines.filter((l) => !l.menu.salesOpen || l.qty > l.menu.available);
 
-  return { ...query, lines, count, subtotal, fee, total: subtotal + fee, exceeded };
+  const overDaily = !!menu && count > menu.remainingToday;
+
+  return { ...query, lines, count, subtotal, fee, total: subtotal + fee, exceeded, overDaily };
 }

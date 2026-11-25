@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { colors, radius, spacing, type } from '@/theme/tokens';
+import { colors, radius, shadow, spacing, type } from '@/theme/tokens';
 
 /** Contadores en fila. */
 export function Stats({ items }: { items: { label: string; value: number | string }[] }) {
@@ -26,6 +26,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.card,
     borderRadius: radius.tile,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.separator,
+    boxShadow: shadow.card,
     padding: spacing.md,
     alignItems: 'center',
   },

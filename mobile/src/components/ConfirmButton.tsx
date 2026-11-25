@@ -22,7 +22,7 @@ export function ConfirmButton({
     <View style={styles.container}>
       <PrimaryButton
         title={title}
-        variant="soft"
+        variant="danger"
         loading={loading}
         disabled={isDisabled}
         onPress={() => setOpen((value) => !value)}

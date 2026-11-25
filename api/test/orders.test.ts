@@ -12,6 +12,7 @@ const prisma = createPrisma(TEST_DATABASE_URL);
 const config = loadConfig({ JWT_SECRET: 'secreto-de-prueba', QR_SECRET: 'qr-de-prueba',
   // Los tests hacen muchos ingresos desde la misma dirección.
   AUTH_RATE_LIMIT_PER_MINUTE: '10000',
+  STUDENT_AUTH_RATE_LIMIT_PER_MINUTE: '10000',
   RATE_LIMIT_PER_MINUTE: '10000',
 });
 const DATE = '2026-11-24';
@@ -103,10 +104,12 @@ describe('reserva de stock', () => {
     expect(res.json().shortCode).toMatch(/^[0-9A-F]{4}-\d{2}$/);
     expect(res.json()).not.toHaveProperty('qrTokenHash');
     expect((await stock()).reservedCount).toBe(2);
-    expect(await booked()).toBe(1);
+    expect(await booked()).toBe(2);
 
     const menu = await app.inject({ url: '/menus/today', headers: ana });
-    expect(menu.json().menus[0].available).toBe(3);
+    expect(menu.json().menus[0]).toMatchObject({ available: 3, stock: 5 });
+    const slots = await app.inject({ url: '/pickup-slots/today', headers: ana });
+    expect(slots.json()[0]).toMatchObject({ capacity: 3, remaining: 1 });
   });
 
   it('no sobrevende cuando llegan pedidos simultáneos', async () => {
@@ -127,6 +130,56 @@ describe('reserva de stock', () => {
 
     expect(res.json().code).toBe('slot_full');
     expect((await stock()).reservedCount).toBe(1);
+  });
+
+  it('el cupo de la franja cuenta almuerzos, no pedidos', async () => {
+    const ana = await login(ids.ana);
+    await order(ana, 2); // quedan 1 de 3
+    expect((await order(ana, 2)).json().code).toBe('slot_full');
+    expect((await order(ana, 1)).statusCode).toBe(201);
+    expect(await booked()).toBe(3);
+  });
+
+  it('el máximo diario suma todos los pedidos, incluso simultáneos', async () => {
+    await prisma.pickupSlot.update({ where: { id: ids.slot }, data: { capacity: 50 } });
+    await prisma.menu.update({ where: { id: ids.menu }, data: { initialStock: 50 } });
+    const ana = await login(ids.ana);
+    const results = await Promise.all(Array.from({ length: 4 }, () => order(ana, 4)));
+
+    expect(results.filter((r) => r.statusCode === 201)).toHaveLength(2);
+    expect(results.filter((r) => r.json().code === 'max_per_day')).toHaveLength(2);
+    expect((await stock()).reservedCount).toBe(8);
+
+    // No afecta a otros estudiantes, y cancelar devuelve lo reservado.
+    expect((await order(await login(ids.beto), 4)).statusCode).toBe(201);
+    const remaining = async () =>
+      (await app.inject({ url: '/menus/today', headers: ana })).json().remainingToday;
+    expect(await remaining()).toBe(2);
+    const { id } = results.find((r) => r.statusCode === 201)!.json();
+    await app.inject({ method: 'POST', url: `/orders/${id}/cancel`, headers: ana });
+    expect(await remaining()).toBe(6);
+  });
+
+  it('crea las franjas de un día con menú que no las tiene', async () => {
+    const ana = await login(ids.ana);
+    const slots = async () =>
+      (await app.inject({ url: '/pickup-slots/today', headers: ana })).json() as {
+        time: string;
+        available: boolean;
+      }[];
+    await prisma.pickupSlot.deleteMany();
+
+    // Dos lecturas a la vez no las duplican.
+    await Promise.all([slots(), slots()]);
+    const created = await slots();
+    expect(created.map((s) => s.time)).toEqual([
+      '12:00', '12:30', '13:00', '13:30', '14:00', '14:30',
+    ]);
+    expect(created.every((s) => s.available)).toBe(true);
+
+    await prisma.pickupSlot.deleteMany();
+    await prisma.menu.deleteMany();
+    expect(await slots()).toEqual([]);
   });
 
   it('rechaza más del máximo por menú y las ventas pausadas', async () => {
@@ -216,6 +269,23 @@ describe('pago simulado', () => {
     const cancel = await app.inject({ method: 'POST', url: `/orders/${id}/cancel`, headers: ana });
     expect(cancel.json().status).toBe('paid');
     expect((await stock()).soldCount).toBe(1);
+  });
+
+  it('un pedido pagado de un día anterior queda como no retirado', async () => {
+    const ana = await login(ids.ana);
+    const { id } = (await order(ana, 1)).json();
+    await pay(ana, id);
+
+    clock = atLocalTime('2026-11-25', '09:00');
+    await expireOrders(prisma, config, clock);
+    const saved = await prisma.order.findUniqueOrThrow({ where: { id } });
+    expect(saved).toMatchObject({ status: 'expired' });
+    expect(saved.paidAt).not.toBeNull();
+    expect((await stock()).soldCount).toBe(1);
+
+    const again = await login(ids.ana);
+    const res = await app.inject({ url: `/orders/${id}`, headers: again });
+    expect(res.json()).toMatchObject({ status: 'expired', wasPaid: true, qrToken: null });
   });
 
   it('no deja pagar un pedido expirado ni uno ajeno', async () => {

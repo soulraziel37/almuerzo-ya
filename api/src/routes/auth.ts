@@ -5,7 +5,7 @@ import type { User } from '../generated/prisma/client';
 import { signSession } from '../lib/auth';
 import { demoGate } from '../lib/demo-gate';
 import { AppError } from '../lib/errors';
-import { authLimit } from '../lib/security';
+import { operatorLoginLimit, studentLoginLimit } from '../lib/security';
 import type { ServerDeps } from '../server';
 
 // Se compara contra esto cuando el ID no existe, para responder en un tiempo parecido.
@@ -18,13 +18,13 @@ export function authRoutes(app: FastifyInstance, { prisma, config }: ServerDeps)
   });
 
   const gate = demoGate(config.DEMO_ACCESS_CODE);
-  const limit = authLimit(config);
+  const studentLimit = studentLoginLimit(config);
 
   const requireMock = () => {
     if (config.AUTH_MODE !== 'mock') throw new AppError(404, 'not_found', 'No disponible.');
   };
 
-  app.get('/auth/mock/users', limit, async (request) => {
+  app.get('/auth/mock/users', studentLimit, async (request) => {
     requireMock();
     gate(request);
     return prisma.user.findMany({
@@ -34,7 +34,7 @@ export function authRoutes(app: FastifyInstance, { prisma, config }: ServerDeps)
     });
   });
 
-  app.post('/auth/mock/login', limit, async (request) => {
+  app.post('/auth/mock/login', studentLimit, async (request) => {
     requireMock();
     gate(request);
     const { userId } = z.object({ userId: z.uuid() }).parse(request.body);
@@ -43,7 +43,7 @@ export function authRoutes(app: FastifyInstance, { prisma, config }: ServerDeps)
     return sessionFor(user);
   });
 
-  app.post('/auth/operator/login', limit, async (request) => {
+  app.post('/auth/operator/login', operatorLoginLimit(config), async (request) => {
     gate(request);
     const { loginId, password } = z
       .object({ loginId: z.string().trim().min(1).max(40), password: z.string().min(1).max(100) })

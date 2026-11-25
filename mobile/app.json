@@ -51,6 +51,18 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "d60a5f0c-4f85-4594-8ddd-562c265d737f"
+      }
+    },
+    "owner": "kannelas-team",
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/d60a5f0c-4f85-4594-8ddd-562c265d737f"
     }
   }
 }

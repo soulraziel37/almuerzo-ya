@@ -24,7 +24,7 @@ const week: [Dish, Dish][] = [
   ],
   [
     ['Pastel de choclo', 'Ensalada de tomate, pan y jugo', false, 'pastel-choclo'],
-    ['Risotto de champiñones', 'Ensalada verde y postre', true],
+    ['Risotto de champiñones', 'Ensalada verde y postre', true, 'risotto'],
   ],
   [
     ['Carne mechada con puré', 'Ensalada surtida, pan y jugo', false, 'carne-pure'],

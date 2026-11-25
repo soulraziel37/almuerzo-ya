@@ -10,6 +10,7 @@ app puede recortarlas al mostrarlas. Cada una conserva su licencia.
 | `pollo-arroz.jpg` | [Arroz-con-Pollo](https://commons.wikimedia.org/wiki/File:Arroz-con-Pollo.jpg) | Kobako | [CC BY-SA 2.5](https://creativecommons.org/licenses/by-sa/2.5/) |
 | `lasana.jpg` | [Vegetable lasagne, Hahn](https://commons.wikimedia.org/wiki/File:Vegetable_lasagne,_Hahn.jpg) | Gerda Arendt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) |
 | `pastel-choclo.jpg` | [Pastel de choclo](https://commons.wikimedia.org/wiki/File:Pastel_de_choclo.jpg) | Paloma Baytelman | [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0/) |
+| `risotto.jpg` | [Mushroom and Leek Risotto](https://commons.wikimedia.org/wiki/File:Mushroom_and_Leek_Risotto_(49535206656).jpg) | spurekar | [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/) |
 | `carne-pure.jpg` | [Pot roast, green beans, and mashed potatoes](https://commons.wikimedia.org/wiki/File:Pot_roast,_green_beans,_and_mashed_potatoes_-_Massachusetts.jpg) | Daderot | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) |
 | `quiche.jpg` | [Spinach quiche](https://commons.wikimedia.org/wiki/File:Spinach_quiche_(4333163002).jpg) | Karen and Brad Emerson | [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/) |
 | `pescado.jpg` | [Pescado frito con ensaladas](https://commons.wikimedia.org/wiki/File:Pescado_frito_con_ensaladas_-_Flickr_-_Marieloreto.jpg) | mariela morales | [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/) |

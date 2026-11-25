@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Menú del día</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#1E7B37}a:hover{color:#16602A}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; background: #F2F2F7; font-family: -apple-system, 'SF Pro Text', system-ui, 'Helvetica Neue', sans-serif; color: #000000">
+  <div style="padding: 62px 16px 200px; display: flex; flex-direction: column; gap: 16px">
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 4px">
+      <span style="font-size: 15px; color: #3C3C43">Martes 24 de noviembre</span>
+      <button type="button" aria-label="Perfil" style="width: 44px; height: 44px; border-radius: 22px; border: 1px solid rgba(255,255,255,0.8); background: rgba(255,255,255,0.6); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); box-shadow: inset 0 1px 0 #FFFFFF, 0 4px 14px rgba(0,0,0,0.08); font: 600 15px -apple-system, system-ui, sans-serif; color: #000000">CR</button>
+    </div>
+    <h1 style="margin: 0; padding: 0 4px; font-family: -apple-system, 'SF Pro Display', system-ui, sans-serif; font-size: 34px; line-height: 41px; font-weight: 700; letter-spacing: 0.37px">Menú de hoy</h1>
+
+    <div style="display: flex; align-items: center; gap: 12px; background: #FFFFFF; border-radius: 26px; padding: 14px 18px">
+      <div style="width: 32px; height: 32px; flex: none; border-radius: 9px; background: #1E7B37; color: #FFFFFF; display: flex; align-items: center; justify-content: center">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 1px">
+        <span style="font-size: 15px; font-weight: 600">Reservas hasta las 11:30</span>
+        <span style="font-size: 13px; color: #3C3C43">Retiro de 12:00 a 15:00 · Casino central</span>
+      </div>
+    </div>
+
+    <sc-for list="{{ menus }}" as="m" hint-placeholder-count="2">
+      <button type="button" onClick="{{ m.pick }}" disabled="{{ m.disabled }}" aria-pressed="{{ m.selected }}" style="text-align: left; font-family: -apple-system, system-ui, sans-serif; color: #000000; background: #FFFFFF; border: 0; border-radius: 26px; padding: 0; overflow: hidden; display: flex; flex-direction: column; cursor: pointer; opacity: {{m.opacity}}; box-shadow: {{m.ring}}">
+        <div style="height: 120px; width: 100%; position: relative; background: {{m.tile}}; display: flex; align-items: center; justify-content: center; color: {{m.tileInk}}">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11h18a9 9 0 0 1-18 0z"></path><path d="M8 21h8"></path><path d="M9 7.5c0-1.5 1-2 1-3.5M14 7.5c0-1.5 1-2 1-3.5"></path></svg>
+          <span style="position: absolute; left: 12px; top: 12px; font-size: 13px; font-weight: 600; color: #000000; padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,0.55); backdrop-filter: blur(16px) saturate(180%); -webkit-backdrop-filter: blur(16px) saturate(180%); border: 1px solid rgba(255,255,255,0.8)">{{ m.label }}</span>
+          <span style="position: absolute; right: 12px; top: 12px; font-size: 13px; font-weight: 600; padding: 6px 12px; border-radius: 999px; background: {{m.pillBg}}; color: {{m.pillInk}}">{{ m.stockText }}</span>
+        </div>
+        <div style="padding: 14px 18px 16px; display: flex; gap: 12px; align-items: center; width: 100%; box-sizing: border-box">
+          <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 3px">
+            <div style="display: flex; gap: 8px; align-items: center">
+              <span style="font-size: 17px; font-weight: 600; line-height: 22px">{{ m.name }}</span>
+              <sc-if value="{{ m.veg }}" hint-placeholder-val="{{ false }}">
+                <span aria-label="Vegetariano" style="font-size: 11px; font-weight: 700; color: #1E7B37; border: 1px solid #1E7B37; border-radius: 6px; padding: 1px 5px">VEG</span>
+              </sc-if>
+            </div>
+            <span style="font-size: 15px; line-height: 20px; color: #3C3C43">{{ m.desc }}</span>
+            <span style="font-size: 15px; font-weight: 600; margin-top: 4px">$ [PRECIO]</span>
+          </div>
+          <div style="width: 26px; height: 26px; flex: none; border-radius: 13px; box-sizing: border-box; border: 2px solid {{m.radio}}; background: {{m.dot}}; display: flex; align-items: center; justify-content: center; color: #FFFFFF">
+            <sc-if value="{{ m.selected }}" hint-placeholder-val="{{ false }}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+            </sc-if>
+          </div>
+        </div>
+      </button>
+    </sc-for>
+  </div>
+
+  <div style="position: absolute; left: 16px; right: 16px; bottom: 104px">
+    <a href="Carrito.dc.html" style="height: 52px; border-radius: 999px; background: #1E7B37; color: #FFFFFF; font-size: 17px; font-weight: 600; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 10px 24px rgba(30,123,55,0.3)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l-1 13H7z"></path><path d="M9 7a3 3 0 0 1 6 0"></path></svg>Agregar {{ chosen }} al carrito</a>
+  </div>
+
+  <nav aria-label="Principal" style="position: absolute; left: 20px; right: 20px; bottom: 26px; height: 64px; box-sizing: border-box; padding: 4px; border-radius: 999px; background: rgba(255,255,255,0.55); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); border: 1px solid rgba(255,255,255,0.8); box-shadow: inset 0 1px 0 #FFFFFF, 0 10px 30px rgba(0,0,0,0.12); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px">
+    <a href="Menu.dc.html" aria-current="page" style="border-radius: 999px; background: rgba(0,0,0,0.06); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; text-decoration: none; color: #1E7B37; font-size: 10px; font-weight: 600">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11h18a9 9 0 0 1-18 0z"></path><path d="M8 21h8"></path></svg>Menú</a>
+    <a href="QR.dc.html" style="border-radius: 999px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; text-decoration: none; color: #000000; font-size: 10px; font-weight: 500">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><path d="M14 14h3v3h-3zM20 14v7M14 20h3"></path></svg>Mis pedidos</a>
+    <a href="#" style="border-radius: 999px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; text-decoration: none; color: #000000; font-size: 10px; font-weight: 500">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"></path></svg>Perfil</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"menu2SoldOut":{"editor":"boolean","default":false,"section":"Estado"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const soldOut = this.props.menu2SoldOut ?? false;
+    const base = [
+      { id: 1, label: 'Menú 1', veg: false, name: 'Pollo al jugo con arroz', desc: 'Ensalada surtida, pan y jugo natural', left: 42, tile: '#FFE3CC', tileInk: '#A13D09' },
+      { id: 2, label: 'Menú 2', veg: true, name: 'Lasaña de verduras', desc: 'Ensalada verde, pan y fruta', left: soldOut ? 0 : 8, tile: '#D8F0DC', tileInk: '#1E7B37' }
+    ];
+    let sel = (this.state && this.state.sel) || 1;
+    if (sel === 2 && soldOut) sel = 1;
+    const menus = base.map((m) => {
+      const selected = m.id === sel;
+      const out = m.left === 0;
+      const low = !out && m.left <= 10;
+      return Object.assign({}, m, {
+        selected: selected,
+        disabled: out,
+        opacity: out ? 0.5 : 1,
+        ring: selected ? '0 0 0 2.5px #1E7B37' : 'none',
+        radio: selected ? '#1E7B37' : '#C7C7CC',
+        dot: selected ? '#1E7B37' : 'transparent',
+        stockText: out ? 'Agotado' : (low ? 'Últimos ' + m.left : 'Quedan ' + m.left),
+        pillBg: out ? '#E5E5EA' : (low ? '#C93400' : 'rgba(255,255,255,0.85)'),
+        pillInk: out ? '#3C3C43' : (low ? '#FFFFFF' : '#16602A'),
+        pick: () => { if (!out) this.setState({ sel: m.id }); }
+      });
+    });
+    return { menus: menus, chosen: 'Menú ' + sel };
+  }
+}
+</script>
+</body>
+</html>

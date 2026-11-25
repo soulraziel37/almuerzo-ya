@@ -1,0 +1,136 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  student
+  operator
+  admin
+}
+
+enum MenuStatus {
+  draft
+  scheduled
+  published
+  closed
+}
+
+enum OrderStatus {
+  pending_payment
+  paid
+  delivered
+  cancelled
+  expired
+}
+
+enum PaymentMethod {
+  apple_pay
+  webpay
+}
+
+enum PaymentStatus {
+  created
+  approved
+  rejected
+  expired
+}
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  entraOid     String?  @unique
+  // ID de operador (p. ej. OP-0001) para el login local.
+  loginId      String?  @unique
+  email        String   @unique
+  name         String
+  role         Role
+  passwordHash String?
+  createdAt    DateTime @default(now())
+  orders       Order[]  @relation("studentOrders")
+  deliveries   Order[]  @relation("deliveredBy")
+}
+
+model Menu {
+  id            String      @id @default(uuid()) @db.Uuid
+  date          DateTime    @db.Date
+  slot          Int
+  name          String
+  sides         String
+  isVegetarian  Boolean     @default(false)
+  priceClp      Int
+  photoUrl      String?
+  initialStock  Int
+  reservedCount Int         @default(0)
+  soldCount     Int         @default(0)
+  salesOpen     Boolean     @default(true)
+  status        MenuStatus  @default(draft)
+  items         OrderItem[]
+
+  @@unique([date, slot])
+}
+
+model PickupSlot {
+  id          String   @id @default(uuid()) @db.Uuid
+  date        DateTime @db.Date
+  startsAt    DateTime @db.Timestamptz(3)
+  endsAt      DateTime @db.Timestamptz(3)
+  capacity    Int
+  bookedCount Int      @default(0)
+  orders      Order[]
+
+  @@unique([date, startsAt])
+}
+
+model Order {
+  id            String        @id @default(uuid()) @db.Uuid
+  shortCode     String        @unique
+  userId        String        @db.Uuid
+  user          User          @relation("studentOrders", fields: [userId], references: [id])
+  pickupSlotId  String        @db.Uuid
+  pickupSlot    PickupSlot    @relation(fields: [pickupSlotId], references: [id])
+  status        OrderStatus   @default(pending_payment)
+  paymentMethod PaymentMethod
+  totalClp      Int
+  qrTokenHash   String?       @unique
+  createdAt     DateTime      @default(now())
+  paidAt        DateTime?
+  deliveredAt   DateTime?
+  deliveredById String?       @db.Uuid
+  deliveredBy   User?         @relation("deliveredBy", fields: [deliveredById], references: [id])
+  items         OrderItem[]
+  payments      Payment[]
+
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
+}
+
+model OrderItem {
+  id           String @id @default(uuid()) @db.Uuid
+  orderId      String @db.Uuid
+  order        Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuId       String @db.Uuid
+  menu         Menu   @relation(fields: [menuId], references: [id])
+  qty          Int
+  unitPriceClp Int
+
+  @@index([orderId])
+}
+
+model Payment {
+  id            String        @id @default(uuid()) @db.Uuid
+  orderId       String        @db.Uuid
+  order         Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  provider      PaymentMethod
+  providerToken String?       @unique
+  status        PaymentStatus @default(created)
+  amountClp     Int
+  rawResponse   Json?
+  createdAt     DateTime      @default(now())
+
+  @@index([orderId])
+}

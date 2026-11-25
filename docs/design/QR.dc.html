@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Código QR de retiro</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#1E7B37}a:hover{color:#16602A}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; background: #1E7B37; font-family: -apple-system, 'SF Pro Text', system-ui, 'Helvetica Neue', sans-serif; color: #000000">
+  <div aria-hidden="true" style="position: absolute; right: -120px; top: -80px; width: 360px; height: 360px; border-radius: 50%; background: #2E9A4D"></div>
+  <div aria-hidden="true" style="position: absolute; left: -140px; bottom: 80px; width: 360px; height: 360px; border-radius: 50%; background: #16602A"></div>
+
+  <div style="position: relative; padding: 62px 16px 0; display: flex; flex-direction: column; gap: 16px">
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 4px">
+      <h1 style="margin: 0; font-family: -apple-system, 'SF Pro Display', system-ui, sans-serif; font-size: 34px; line-height: 41px; font-weight: 700; letter-spacing: 0.37px; color: #FFFFFF">Mis pedidos</h1>
+      <span style="font-size: 13px; font-weight: 600; color: #FFFFFF; padding: 7px 12px; border-radius: 999px; background: rgba(255,255,255,0.2); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); border: 1px solid rgba(255,255,255,0.35); box-shadow: inset 0 1px 0 rgba(255,255,255,0.5)">{{ statusText }}</span>
+    </div>
+
+    <div style="background: #FFFFFF; border-radius: 32px; padding: 24px 20px 20px; display: flex; flex-direction: column; align-items: center; gap: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.2)">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 2px">
+        <span style="font-size: 15px; color: #3C3C43">Muestra este código en el mesón</span>
+        <span style="font-size: 22px; font-weight: 700; letter-spacing: 1px">A7F3-29</span>
+      </div>
+      <div role="img" aria-label="Código QR del pedido A7F3-29" style="padding: 14px; border-radius: 20px; background: #FFFFFF; border: 1px solid #E5E5EA; opacity: {{qrOpacity}}">
+        <div style="display: grid; grid-template-columns: repeat(25, 8px); grid-auto-rows: 8px">
+          <sc-for list="{{ cells }}" as="c" hint-placeholder-count="625">
+            <div style="background: {{c.bg}}"></div>
+          </sc-for>
+        </div>
+      </div>
+      <span style="font-size: 13px; color: #3C3C43">Sube el brillo de la pantalla para escanear más rápido</span>
+
+      <div style="width: 100%; background: #F2F2F7; border-radius: 20px; overflow: hidden">
+        <div style="min-height: 44px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; font-size: 15px">
+          <span style="color: #3C3C43">Pedido</span><span style="font-weight: 600">Menú 1 · Pollo al jugo</span>
+        </div>
+        <div style="height: 0.5px; background: rgba(60,60,67,0.29); margin-left: 16px"></div>
+        <div style="min-height: 44px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; font-size: 15px">
+          <span style="color: #3C3C43">Retiro</span><span style="font-weight: 600">Hoy, 12:30 – 13:00</span>
+        </div>
+        <div style="height: 0.5px; background: rgba(60,60,67,0.29); margin-left: 16px"></div>
+        <div style="min-height: 44px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; font-size: 15px">
+          <span style="color: #3C3C43">Lugar</span><span style="font-weight: 600">Casino central</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <nav aria-label="Principal" style="position: absolute; left: 20px; right: 20px; bottom: 26px; height: 64px; box-sizing: border-box; padding: 4px; border-radius: 999px; background: rgba(255,255,255,0.55); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); border: 1px solid rgba(255,255,255,0.8); box-shadow: inset 0 1px 0 #FFFFFF, 0 10px 30px rgba(0,0,0,0.18); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px">
+    <a href="Menu.dc.html" style="border-radius: 999px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; text-decoration: none; color: #000000; font-size: 10px; font-weight: 500">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11h18a9 9 0 0 1-18 0z"></path><path d="M8 21h8"></path></svg>Menú</a>
+    <a href="QR.dc.html" aria-current="page" style="border-radius: 999px; background: rgba(0,0,0,0.07); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; text-decoration: none; color: #16602A; font-size: 10px; font-weight: 600">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><path d="M14 14h3v3h-3zM20 14v7M14 20h3"></path></svg>Mis pedidos</a>
+    <a href="#" style="border-radius: 999px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; text-decoration: none; color: #000000; font-size: 10px; font-weight: 500">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"></path></svg>Perfil</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"status":{"editor":"enum","options":["Listo para retirar","Entregado"],"default":"Listo para retirar","section":"Estado"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const N = 25;
+    let seed = 7349;
+    const rnd = () => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; };
+    const finder = (r, c) => {
+      const corners = [[0, 0], [0, N - 7], [N - 7, 0]];
+      for (const k of corners) {
+        const rr = r - k[0], cc = c - k[1];
+        if (rr >= -1 && rr <= 7 && cc >= -1 && cc <= 7) {
+          if (rr < 0 || rr > 6 || cc < 0 || cc > 6) return 0;
+          if (rr === 0 || rr === 6 || cc === 0 || cc === 6) return 1;
+          if (rr >= 2 && rr <= 4 && cc >= 2 && cc <= 4) return 1;
+          return 0;
+        }
+      }
+      return -1;
+    };
+    const cells = [];
+    for (let r = 0; r < N; r++) {
+      for (let c = 0; c < N; c++) {
+        let v = finder(r, c);
+        if (v === -1) {
+          if (r === 6) v = c % 2 === 0 ? 1 : 0;
+          else if (c === 6) v = r % 2 === 0 ? 1 : 0;
+          else if (r >= 16 && r <= 20 && c >= 16 && c <= 20) {
+            const rr = r - 16, cc = c - 16;
+            v = (rr === 0 || rr === 4 || cc === 0 || cc === 4 || (rr === 2 && cc === 2)) ? 1 : 0;
+          } else v = rnd() < 0.5 ? 1 : 0;
+        }
+        cells.push({ bg: v ? '#000000' : 'transparent' });
+      }
+    }
+    const status = this.props.status ?? 'Listo para retirar';
+    return { cells: cells, statusText: status, qrOpacity: status === 'Entregado' ? 0.2 : 1 };
+  }
+}
+</script>
+</body>
+</html>

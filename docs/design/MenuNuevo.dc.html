@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Nuevo menú</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#1E7B37}a:hover{color:#16602A}
+input::placeholder,textarea::placeholder{color:#8A8A8E}
+input:focus,textarea:focus{outline:none}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; background: #3A3A3C; font-family: -apple-system, 'SF Pro Text', system-ui, 'Helvetica Neue', sans-serif; color: #000000">
+  <div style="position: absolute; left: 0; right: 0; top: 54px; bottom: 0; background: #F2F2F7; border-radius: 38px 38px 0 0; overflow: hidden; display: flex; flex-direction: column">
+    <div style="padding: 14px 16px 10px; display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center">
+      <a href="MenuGestion.dc.html" aria-label="Cancelar" style="width: 44px; height: 44px; border-radius: 22px; display: flex; align-items: center; justify-content: center; color: #000000; background: rgba(255,255,255,0.75); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); border: 1px solid #FFFFFF; box-shadow: 0 4px 14px rgba(0,0,0,0.08)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+      </a>
+      <h1 style="margin: 0; text-align: center; font-size: 17px; font-weight: 600">Nuevo menú</h1>
+      <a href="MenuGestion.dc.html" aria-label="Guardar" style="width: 44px; height: 44px; border-radius: 22px; display: flex; align-items: center; justify-content: center; color: #FFFFFF; background: #1E7B37; box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 4px 14px rgba(30,123,55,0.3)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+      </a>
+    </div>
+
+    <form style="margin: 0; padding: 6px 16px 34px; display: flex; flex-direction: column; gap: 18px">
+      <div role="group" aria-label="Tipo de menú" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px; padding: 3px; border-radius: 999px; background: #E3E3E8">
+        <button type="button" onClick="{{ pick1 }}" aria-pressed="{{ is1 }}" style="height: 38px; border: 0; border-radius: 999px; font: 600 15px -apple-system, system-ui, sans-serif; cursor: pointer; color: #000000; background: {{bg1}}; box-shadow: {{sh1}}">Menú 1</button>
+        <button type="button" onClick="{{ pick2 }}" aria-pressed="{{ is2 }}" style="height: 38px; border: 0; border-radius: 999px; font: 600 15px -apple-system, system-ui, sans-serif; cursor: pointer; color: #000000; background: {{bg2}}; box-shadow: {{sh2}}">Menú 2</button>
+      </div>
+
+      <div style="background: #FFFFFF; border-radius: 26px; overflow: hidden">
+        <button type="button" style="width: 100%; border: 0; background: transparent; padding: 12px 16px 12px 12px; display: flex; align-items: center; gap: 12px; cursor: pointer; font: 400 17px -apple-system, system-ui, sans-serif; color: #1E7B37; text-align: left">
+          <span aria-hidden="true" style="width: 56px; height: 56px; flex: none; border-radius: 16px; background: #EEF7F0; display: flex; align-items: center; justify-content: center">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="3"></rect><circle cx="12" cy="13" r="3.5"></circle><path d="M8 6l1.5-2h5L16 6"></path></svg>
+          </span>
+          Agregar foto del plato
+        </button>
+        <div style="height: 0.5px; background: rgba(60,60,67,0.29); margin-left: 20px"></div>
+        <div style="padding: 10px 20px; display: flex; flex-direction: column; gap: 2px">
+          <label for="nombre" style="font-size: 13px; color: #3C3C43">Nombre del plato</label>
+          <input id="nombre" type="text" placeholder="Ej. Pollo al jugo con arroz" style="height: 26px; border: 0; padding: 0; font: 400 17px -apple-system, system-ui, sans-serif; background: transparent; color: #000000">
+        </div>
+        <div style="height: 0.5px; background: rgba(60,60,67,0.29); margin-left: 20px"></div>
+        <div style="padding: 10px 20px; display: flex; flex-direction: column; gap: 2px">
+          <label for="acomp" style="font-size: 13px; color: #3C3C43">Acompañamientos</label>
+          <input id="acomp" type="text" placeholder="Ensalada, pan, postre o jugo" style="height: 26px; border: 0; padding: 0; font: 400 17px -apple-system, system-ui, sans-serif; background: transparent; color: #000000">
+        </div>
+        <div style="height: 0.5px; background: rgba(60,60,67,0.29); margin-left: 20px"></div>
+        <div style="min-height: 48px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between">
+          <span style="font-size: 17px">Vegetariano</span>
+          <button type="button" role="switch" aria-checked="{{ veg }}" aria-label="Vegetariano" onClick="{{ toggleVeg }}" style="width: 64px; height: 30px; border: 0; padding: 2px; border-radius: 999px; background: {{vegTrack}}; cursor: pointer; display: flex; justify-content: {{vegSide}}">
+            <span style="width: 38px; height: 26px; border-radius: 999px; background: #FFFFFF; box-shadow: 0 2px 6px rgba(0,0,0,0.2)"></span>
+          </button>
+        </div>
+      </div>
+
+      <div style="background: #FFFFFF; border-radius: 26px; overflow: hidden">
+        <div style="min-height: 48px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; font-size: 17px">
+          <span>Fecha</span>
+          <span style="padding: 6px 12px; border-radius: 10px; background: #E9E9EE; font-size: 15px">Mié 25 nov</span>
+        </div>
+        <div style="height: 0.5px; background: rgba(60,60,67,0.29); margin-left: 20px"></div>
+        <div style="min-height: 48px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px">
+          <label for="precio" style="font-size: 17px">Precio</label>
+          <input id="precio" type="text" inputmode="numeric" placeholder="$ 0" style="width: 120px; height: 26px; border: 0; padding: 0; text-align: right; font: 400 17px -apple-system, system-ui, sans-serif; background: transparent; color: #000000">
+        </div>
+        <div style="height: 0.5px; background: rgba(60,60,67,0.29); margin-left: 20px"></div>
+        <div style="min-height: 52px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between">
+          <span style="font-size: 17px">Stock inicial</span>
+          <div style="display: flex; align-items: center; gap: 12px">
+            <span style="font-size: 17px; font-weight: 600; min-width: 36px; text-align: right">{{ stock }}</span>
+            <div style="display: flex; align-items: center; height: 32px; border-radius: 999px; background: #E9E9EE">
+              <button type="button" aria-label="Restar 10" onClick="{{ dec }}" style="width: 46px; height: 32px; border: 0; background: transparent; cursor: pointer; color: #000000; display: flex; align-items: center; justify-content: center">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"></path></svg>
+              </button>
+              <span aria-hidden="true" style="width: 0.5px; height: 16px; background: rgba(60,60,67,0.35)"></span>
+              <button type="button" aria-label="Sumar 10" onClick="{{ inc }}" style="width: 46px; height: 32px; border: 0; background: transparent; cursor: pointer; color: #000000; display: flex; align-items: center; justify-content: center">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"></path></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <a href="MenuGestion.dc.html" style="height: 52px; border-radius: 999px; background: #1E7B37; color: #FFFFFF; font-size: 17px; font-weight: 600; text-decoration: none; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 10px 24px rgba(30,123,55,0.3)">Publicar menú</a>
+        <p style="margin: 0; padding: 0 20px; text-align: center; font-size: 13px; line-height: 18px; color: #3C3C43">Los estudiantes lo verán desde las 00:00 del día elegido.</p>
+      </div>
+    </form>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const type = st.type || 1;
+    const veg = !!st.veg;
+    const stock = st.stock || 100;
+    const on = '#FFFFFF', sh = '0 2px 8px rgba(0,0,0,0.12)';
+    return {
+      is1: type === 1, is2: type === 2,
+      bg1: type === 1 ? on : 'transparent', bg2: type === 2 ? on : 'transparent',
+      sh1: type === 1 ? sh : 'none', sh2: type === 2 ? sh : 'none',
+      pick1: () => this.setState({ type: 1 }), pick2: () => this.setState({ type: 2 }),
+      veg: veg, vegTrack: veg ? '#34C759' : '#E9E9EA', vegSide: veg ? 'flex-end' : 'flex-start',
+      toggleVeg: () => this.setState({ veg: !veg }),
+      stock: stock,
+      inc: () => this.setState({ stock: Math.min(500, stock + 10) }),
+      dec: () => this.setState({ stock: Math.max(10, stock - 10) })
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Control de stock</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#1E7B37}a:hover{color:#16602A}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; background: #F2F2F7; font-family: -apple-system, 'SF Pro Text', system-ui, 'Helvetica Neue', sans-serif; color: #000000">
+  <div style="padding: 58px 16px 120px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 4px">
+      <span style="font-size: 15px; color: #3C3C43">Martes 24 nov · Casino central</span>
+      <button type="button" style="height: 40px; padding: 0 14px; border-radius: 999px; font: 600 15px -apple-system, system-ui, sans-serif; color: #D70015; background: rgba(255,255,255,0.7); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); border: 1px solid #FFFFFF; box-shadow: 0 4px 14px rgba(0,0,0,0.08)">Cerrar día</button>
+    </div>
+    <h1 style="margin: 0; padding: 0 4px; font-family: -apple-system, 'SF Pro Display', system-ui, sans-serif; font-size: 34px; line-height: 41px; font-weight: 700; letter-spacing: 0.37px">Stock de hoy</h1>
+
+    <div style="background: #FFFFFF; border-radius: 26px; padding: 14px 8px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr))">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 2px">
+        <span style="font-size: 24px; font-weight: 700">{{ totalSold }}</span>
+        <span style="font-size: 13px; color: #3C3C43">Vendidos</span>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 2px; border-left: 0.5px solid rgba(60,60,67,0.29); border-right: 0.5px solid rgba(60,60,67,0.29)">
+        <span style="font-size: 24px; font-weight: 700; color: #1E7B37">124</span>
+        <span style="font-size: 13px; color: #3C3C43">Entregados</span>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 2px">
+        <span style="font-size: 24px; font-weight: 700">46</span>
+        <span style="font-size: 13px; color: #3C3C43">Por retirar</span>
+      </div>
+    </div>
+
+    <sc-for list="{{ menus }}" as="m" hint-placeholder-count="2">
+      <section style="background: #FFFFFF; border-radius: 26px; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; align-items: center; gap: 12px">
+          <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 1px">
+            <span style="font-size: 13px; color: #3C3C43">{{ m.label }} · {{ m.state }}</span>
+            <h2 style="margin: 0; font-size: 17px; font-weight: 600">{{ m.name }}</h2>
+          </div>
+          <button type="button" role="switch" aria-checked="{{ m.open }}" aria-label="Ventas abiertas" onClick="{{ m.toggle }}" style="width: 64px; height: 30px; flex: none; border: 0; padding: 2px; border-radius: 999px; background: {{m.track}}; cursor: pointer; display: flex; justify-content: {{m.knobSide}}">
+            <span style="width: 38px; height: 26px; border-radius: 999px; background: #FFFFFF; box-shadow: 0 2px 6px rgba(0,0,0,0.2)"></span>
+          </button>
+        </div>
+        <div style="height: 8px; border-radius: 4px; background: #E5E5EA; overflow: hidden">
+          <div style="height: 8px; border-radius: 4px; width: {{m.pct}}; background: {{m.bar}}"></div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+          <div style="display: flex; flex-direction: column; gap: 1px"><span style="font-size: 13px; color: #3C3C43">Stock</span><span style="font-size: 20px; font-weight: 700">{{ m.stock }}</span></div>
+          <div style="display: flex; flex-direction: column; gap: 1px"><span style="font-size: 13px; color: #3C3C43">Vendidos</span><span style="font-size: 20px; font-weight: 700">{{ m.sold }}</span></div>
+          <div style="display: flex; flex-direction: column; gap: 1px"><span style="font-size: 13px; color: #3C3C43">Disponibles</span><span style="font-size: 20px; font-weight: 700; color: {{m.leftInk}}">{{ m.left }}</span></div>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 10px; border-top: 0.5px solid rgba(60,60,67,0.29)">
+          <span style="font-size: 15px">Ajustar stock</span>
+          <div style="display: flex; align-items: center; height: 36px; border-radius: 999px; background: #E9E9EE">
+            <button type="button" aria-label="Quitar una porción" onClick="{{ m.dec }}" style="width: 52px; height: 36px; border: 0; background: transparent; cursor: pointer; color: #000000; display: flex; align-items: center; justify-content: center">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"></path></svg>
+            </button>
+            <span aria-hidden="true" style="width: 0.5px; height: 18px; background: rgba(60,60,67,0.35)"></span>
+            <button type="button" aria-label="Agregar una porción" onClick="{{ m.inc }}" style="width: 52px; height: 36px; border: 0; background: transparent; cursor: pointer; color: #000000; display: flex; align-items: center; justify-content: center">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"></path></svg>
+            </button>
+          </div>
+        </div>
+      </section>
+    </sc-for>
+  </div>
+
+  <nav aria-label="Operador" style="position: absolute; left: 40px; right: 40px; bottom: 26px; height: 64px; box-sizing: border-box; padding: 4px; border-radius: 999px; background: rgba(255,255,255,0.55); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); border: 1px solid rgba(255,255,255,0.8); box-shadow: inset 0 1px 0 #FFFFFF, 0 10px 30px rgba(0,0,0,0.14); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px">
+    <a href="Escanear.dc.html" style="border-radius: 999px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; text-decoration: none; color: #000000; font-size: 10px; font-weight: 500">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3M7 12h10"></path></svg>Escanear</a>
+    <a href="Stock.dc.html" aria-current="page" style="border-radius: 999px; background: rgba(0,0,0,0.07); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; text-decoration: none; color: #16602A; font-size: 10px; font-weight: 600">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7l9-4 9 4-9 4z"></path><path d="M3 7v10l9 4 9-4V7"></path><path d="M12 11v10"></path></svg>Stock</a>
+    <a href="MenuGestion.dc.html" style="border-radius: 999px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; text-decoration: none; color: #000000; font-size: 10px; font-weight: 500">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3"></rect><path d="M8 8h8M8 12h8M8 16h5"></path></svg>Menús</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"lowStockAt":{"editor":"int","default":10,"min":1,"max":50,"section":"Alertas"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const low = this.props.lowStockAt ?? 10;
+    const stock = st.stock || { 1: 120, 2: 100 };
+    const open = st.open || { 1: true, 2: true };
+    const base = [
+      { id: 1, label: 'Menú 1', name: 'Pollo al jugo con arroz', sold: 78 },
+      { id: 2, label: 'Menú 2', name: 'Lasaña de verduras', sold: 92 }
+    ];
+    const setStock = (id, d) => {
+      const next = Object.assign({}, stock);
+      const b = base.find((x) => x.id === id);
+      next[id] = Math.max(b.sold, stock[id] + d);
+      this.setState({ stock: next });
+    };
+    const menus = base.map((m) => {
+      const s = stock[m.id];
+      const left = s - m.sold;
+      const isOpen = open[m.id] && left > 0;
+      const isLow = left > 0 && left <= low;
+      return Object.assign({}, m, {
+        stock: s, left: left, open: isOpen,
+        state: !open[m.id] ? 'Ventas pausadas' : (left === 0 ? 'Agotado' : (isLow ? 'Stock bajo' : 'A la venta')),
+        pct: Math.round((m.sold / s) * 100) + '%',
+        bar: isLow || left === 0 ? '#C93400' : '#34C759',
+        leftInk: isLow || left === 0 ? '#C93400' : '#000000',
+        track: isOpen ? '#34C759' : '#E9E9EA',
+        knobSide: isOpen ? 'flex-end' : 'flex-start',
+        toggle: () => { const n = Object.assign({}, open); n[m.id] = !open[m.id]; this.setState({ open: n }); },
+        inc: () => setStock(m.id, 1),
+        dec: () => setStock(m.id, -1)
+      });
+    });
+    return { menus: menus, totalSold: base.reduce((a, b) => a + b.sold, 0) };
+  }
+}
+</script>
+</body>
+</html>

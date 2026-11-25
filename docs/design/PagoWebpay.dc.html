@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Pago con Webpay</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#1E7B37}a:hover{color:#16602A}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; background: #000000; font-family: -apple-system, 'SF Pro Text', system-ui, 'Helvetica Neue', sans-serif; color: #000000">
+  <div style="position: absolute; left: 0; right: 0; top: 54px; bottom: 0; background: #FFFFFF; border-radius: 38px 38px 0 0; overflow: hidden; display: flex; flex-direction: column">
+    <div style="padding: 14px 16px 12px; display: grid; grid-template-columns: 80px minmax(0, 1fr) 80px; align-items: center; background: rgba(242,242,247,0.7); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); border-bottom: 0.5px solid rgba(60,60,67,0.29)">
+      <a href="Checkout.dc.html" style="height: 36px; padding: 0 14px; border-radius: 999px; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 600; text-decoration: none; color: #0A64D8; background: rgba(255,255,255,0.75); border: 1px solid #FFFFFF; box-shadow: 0 2px 8px rgba(0,0,0,0.06)">Cancelar</a>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 1px">
+        <span style="display: flex; align-items: center; gap: 4px; font-size: 15px; font-weight: 600">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>Webpay</span>
+        <span style="font-size: 12px; color: #3C3C43">Conexión segura</span>
+      </div>
+      <span></span>
+    </div>
+
+    <div style="margin: 16px 16px 0; padding: 12px 14px; border-radius: 18px; background: #EEF7F0; color: #16602A; font-size: 13px; line-height: 18px; display: flex; gap: 10px; align-items: flex-start">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 1px"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"></path><path d="M9 12l2 2 4-4"></path></svg>
+      <span>Pagas en el sitio de Webpay con débito, crédito o prepago. Al terminar vuelves automáticamente a Almuerzo Ya.</span>
+    </div>
+
+    <div style="margin: 14px 16px 0; padding: 14px 16px; border-radius: 18px; background: #F2F2F7; display: flex; justify-content: space-between; align-items: center">
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 13px; color: #3C3C43">Comercio</span>
+        <span style="font-size: 15px; font-weight: 600">Almuerzo Ya · Orden 100482</span>
+      </div>
+      <span style="font-size: 17px; font-weight: 700">$ [TOTAL]</span>
+    </div>
+
+    <div style="flex: 1 1 auto; margin: 14px 16px 0; border-radius: 22px; border: 1.5px dashed #C7C7CC; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; padding: 20px; color: #3C3C43">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="3"></rect><path d="M2 10h20M6 15h4"></path></svg>
+      <span style="font-size: 15px; font-weight: 600; color: #000000">Formulario de pago de Webpay</span>
+      <span style="font-size: 13px; line-height: 18px">Aquí se carga la página oficial de Webpay Plus en una vista web segura. La app no ve ni guarda los datos de la tarjeta.</span>
+    </div>
+
+    <div style="padding: 16px 16px 34px; display: flex; flex-direction: column; gap: 10px">
+      <a href="PagoExitoso.dc.html" style="height: 52px; border-radius: 999px; background: #1E7B37; color: #FFFFFF; font-size: 17px; font-weight: 600; text-decoration: none; display: flex; align-items: center; justify-content: center">Simular pago aprobado</a>
+      <span style="text-align: center; font-size: 12px; color: #6C6C70">Botón solo para el prototipo</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

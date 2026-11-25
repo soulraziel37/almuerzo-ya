@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Resultado del pago</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#1E7B37}a:hover{color:#16602A}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; background: #F2F2F7; font-family: -apple-system, 'SF Pro Text', system-ui, 'Helvetica Neue', sans-serif; color: #000000; padding: 120px 16px 34px; display: flex; flex-direction: column; gap: 24px">
+  <div aria-hidden="true" style="position: absolute; left: -100px; top: -160px; width: 590px; height: 420px; border-radius: 50%; background: {{glow}}"></div>
+
+  <div style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center">
+    <div style="width: 96px; height: 96px; border-radius: 48px; background: {{iconBg}}; color: #FFFFFF; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 12px 28px rgba(0,0,0,0.15)">
+      <sc-if value="{{ ok }}" hint-placeholder-val="{{ true }}">
+        <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+      </sc-if>
+      <sc-if value="{{ bad }}" hint-placeholder-val="{{ false }}">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+      </sc-if>
+    </div>
+    <h1 style="margin: 0; font-family: -apple-system, 'SF Pro Display', system-ui, sans-serif; font-size: 28px; line-height: 34px; font-weight: 700">{{ title }}</h1>
+    <p style="margin: 0; font-size: 17px; line-height: 22px; color: #3C3C43; max-width: 300px">{{ subtitle }}</p>
+  </div>
+
+  <div style="position: relative; background: #FFFFFF; border-radius: 26px; overflow: hidden">
+    <div style="min-height: 48px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; font-size: 17px">
+      <span style="color: #3C3C43">Orden</span><span style="font-weight: 600">100482</span>
+    </div>
+    <div style="height: 0.5px; background: rgba(60,60,67,0.29); margin-left: 20px"></div>
+    <div style="min-height: 48px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; font-size: 17px">
+      <span style="color: #3C3C43">Método</span><span style="font-weight: 600">{{ method }}</span>
+    </div>
+    <div style="height: 0.5px; background: rgba(60,60,67,0.29); margin-left: 20px"></div>
+    <div style="min-height: 48px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; font-size: 17px">
+      <span style="color: #3C3C43">Monto</span><span style="font-weight: 600">$ [TOTAL]</span>
+    </div>
+    <sc-if value="{{ ok }}" hint-placeholder-val="{{ true }}">
+      <div style="height: 0.5px; background: rgba(60,60,67,0.29); margin-left: 20px"></div>
+      <div style="min-height: 48px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; font-size: 17px">
+        <span style="color: #3C3C43">Retiro</span><span style="font-weight: 600">Hoy, 12:30 – 13:00</span>
+      </div>
+    </sc-if>
+  </div>
+
+  <div style="position: relative; margin-top: auto; display: flex; flex-direction: column; gap: 10px">
+    <sc-if value="{{ ok }}" hint-placeholder-val="{{ true }}">
+      <a href="QR.dc.html" style="height: 52px; border-radius: 999px; background: #1E7B37; color: #FFFFFF; font-size: 17px; font-weight: 600; text-decoration: none; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 10px 24px rgba(30,123,55,0.3)">Ver mi código QR</a>
+      <a href="Menu.dc.html" style="height: 44px; display: flex; align-items: center; justify-content: center; font-size: 17px; text-decoration: none">Volver al menú</a>
+    </sc-if>
+    <sc-if value="{{ bad }}" hint-placeholder-val="{{ false }}">
+      <a href="Checkout.dc.html" style="height: 52px; border-radius: 999px; background: #000000; color: #FFFFFF; font-size: 17px; font-weight: 600; text-decoration: none; display: flex; align-items: center; justify-content: center">Intentar de nuevo</a>
+      <a href="Carrito.dc.html" style="height: 44px; display: flex; align-items: center; justify-content: center; font-size: 17px; text-decoration: none">Volver al carrito</a>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"result":{"editor":"enum","options":["Aprobado","Rechazado"],"default":"Aprobado","section":"Estado"},"method":{"editor":"enum","options":["Apple Pay","Webpay"],"default":"Apple Pay","section":"Estado"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const ok = (this.props.result ?? 'Aprobado') === 'Aprobado';
+    return {
+      ok: ok, bad: !ok,
+      method: this.props.method ?? 'Apple Pay',
+      iconBg: ok ? '#1E7B37' : '#D70015',
+      glow: ok ? '#D8F0DC' : '#FFE0E3',
+      title: ok ? '¡Pago aprobado!' : 'Pago rechazado',
+      subtitle: ok ? 'Tu almuerzo está reservado. Te avisaremos cuando sea hora de retirarlo.' : 'No se hizo ningún cargo. Revisa tu medio de pago o prueba con otro.'
+    };
+  }
+}
+</script>
+</body>
+</html>

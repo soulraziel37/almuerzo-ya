@@ -12,7 +12,7 @@ Documento del proyecto: [docs/PROYECTO.md](docs/PROYECTO.md) · Diseño: [docs/d
 ## Estado
 
 - [x] Fase 1 · Base
-- [ ] Fase 2 · Design system
+- [x] Fase 2 · Design system
 - [ ] Fase 3 · Estudiante
 - [ ] Fase 4 · Pagos
 - [ ] Fase 5 · Operador

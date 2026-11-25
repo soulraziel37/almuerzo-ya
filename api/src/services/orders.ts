@@ -3,6 +3,7 @@ import type { Config } from '../config';
 import { Prisma, type PaymentMethod, type PrismaClient } from '../generated/prisma/client';
 import { localDate, localTime } from '../lib/dates';
 import { AppError } from '../lib/errors';
+import { hashQr, signQr } from '../lib/qr';
 import { reservationsOpen } from './menus';
 
 export interface NewOrder {
@@ -208,5 +209,67 @@ export async function listOrders(prisma: PrismaClient, config: Config, userId: s
 export async function getOrder(prisma: PrismaClient, config: Config, userId: string, id: string) {
   const order = await prisma.order.findFirst({ where: { id, userId }, include: orderInclude });
   if (!order) throw new AppError(404, 'order_not_found', 'No encontramos ese pedido.');
-  return serializeOrder(order, config);
+  return {
+    ...serializeOrder(order, config),
+    // El QR solo se entrega en el detalle de un pedido pagado y sin retirar.
+    qrToken:
+      order.status === 'paid'
+        ? signQr({ orderId: order.id, shortCode: order.shortCode }, config.QR_SECRET)
+        : null,
+  };
+}
+
+/**
+ * Pago simulado del prototipo: marca el pedido como pagado sin pasar por una pasarela.
+ * La reserva pasa a venta. Repetirlo sobre un pedido ya pagado no cambia nada.
+ */
+export async function payOrder(
+  prisma: PrismaClient,
+  config: Config,
+  userId: string,
+  id: string,
+  now: Date,
+) {
+  await getOrder(prisma, config, userId, id); // valida que sea suyo
+
+  await prisma.$transaction(async (tx) => {
+    // El cambio condicional compite con la expiración y la cancelación: solo uno gana.
+    const changed = await tx.order.updateMany({
+      where: { id, status: 'pending_payment' },
+      data: { status: 'paid', paidAt: now },
+    });
+    if (changed.count !== 1) return;
+
+    const order = await tx.order.findUniqueOrThrow({
+      where: { id },
+      include: { items: { orderBy: { menuId: 'asc' } } },
+    });
+    for (const item of order.items) {
+      await tx.menu.update({
+        where: { id: item.menuId },
+        data: {
+          reservedCount: { decrement: item.qty },
+          soldCount: { increment: item.qty },
+        },
+      });
+    }
+    const token = signQr({ orderId: id, shortCode: order.shortCode }, config.QR_SECRET);
+    await tx.order.update({ where: { id }, data: { qrTokenHash: hashQr(token) } });
+    await tx.payment.create({
+      data: {
+        orderId: id,
+        provider: order.paymentMethod,
+        status: 'approved',
+        amountClp: order.totalClp,
+        rawResponse: { simulated: true },
+        createdAt: now,
+      },
+    });
+  });
+
+  const result = await getOrder(prisma, config, userId, id);
+  if (result.status !== 'paid' && result.status !== 'delivered') {
+    throw new AppError(409, 'order_not_payable', 'Este pedido ya no se puede pagar.');
+  }
+  return result;
 }

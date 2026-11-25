@@ -2,10 +2,11 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { useCancelOrder, useOrder } from '@/api/queries';
+import { useCancelOrder, useOrder, usePayOrder } from '@/api/queries';
 import { GroupedList, ListRow } from '@/components/GroupedList';
 import { Notice } from '@/components/Notice';
 import { PrimaryButton } from '@/components/PrimaryButton';
+import { QrTicket } from '@/components/QrTicket';
 import { Screen } from '@/components/Screen';
 import { clp, longDate, orderStatus } from '@/lib/format';
 import { colors, radius, spacing, type } from '@/theme/tokens';
@@ -26,6 +27,7 @@ export default function OrderScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: order, error } = useOrder(id);
   const cancel = useCancelOrder();
+  const pay = usePayOrder();
   const remaining = useCountdown(order?.expiresAt);
   const [confirming, setConfirming] = useState(false);
 
@@ -43,11 +45,13 @@ export default function OrderScreen() {
     <Screen>
       <View style={styles.ticket}>
         <Text style={[styles.status, pending && styles.pending]}>{orderStatus[order.status]}</Text>
+        {order.qrToken ? <QrTicket value={order.qrToken} /> : null}
         <Text accessibilityLabel={`Código ${order.shortCode}`} style={styles.code}>
           {order.shortCode}
         </Text>
-        {pending ? (
-          <Text style={styles.detail}>Reservado por {remaining} minutos más</Text>
+        {pending ? <Text style={styles.detail}>Reservado por {remaining} minutos más</Text> : null}
+        {order.qrToken ? (
+          <Text style={styles.detail}>Sube el brillo de la pantalla para escanear más rápido.</Text>
         ) : null}
       </View>
 
@@ -73,17 +77,28 @@ export default function OrderScreen() {
       {order.status === 'expired' ? (
         <Notice>Se acabó el tiempo para pagar. El stock quedó disponible nuevamente.</Notice>
       ) : null}
+      {pay.error ? <Notice error>{pay.error.message}</Notice> : null}
       {cancel.error ? <Notice error>{cancel.error.message}</Notice> : null}
 
       {pending ? (
-        <PrimaryButton
-          title={confirming ? 'Confirmar cancelación' : 'Cancelar pedido'}
-          variant="soft"
-          loading={cancel.isPending}
-          onPress={() => (confirming ? cancel.mutate(order.id) : setConfirming(true))}
-        />
+        <>
+          <PrimaryButton
+            title="Marcar como pagado"
+            loading={pay.isPending}
+            disabled={cancel.isPending}
+            onPress={() => pay.mutate(order.id)}
+          />
+          <Notice>Prototipo: no se hace ningún cobro.</Notice>
+          <PrimaryButton
+            title={confirming ? 'Confirmar cancelación' : 'Cancelar pedido'}
+            variant="soft"
+            loading={cancel.isPending}
+            disabled={pay.isPending}
+            onPress={() => (confirming ? cancel.mutate(order.id) : setConfirming(true))}
+          />
+        </>
       ) : (
-        <PrimaryButton title="Volver al menú" onPress={() => router.dismissTo('/menu')} />
+        <PrimaryButton title="Volver al menú" variant="soft" onPress={() => router.dismissTo('/menu')} />
       )}
     </Screen>
   );

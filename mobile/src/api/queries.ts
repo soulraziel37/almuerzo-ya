@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { api } from '@/api/client';
-import type { Order, PaymentMethod, PickupSlot, TodayMenu, User } from '@/api/types';
+import type { Order, PickupSlot, TodayMenu, User } from '@/api/types';
 
 // Stock y estados "en tiempo real" por polling (§6).
 const POLL_MS = 5000;
@@ -44,7 +44,6 @@ export const useMockUsers = (enabled: boolean) =>
 type NewOrder = {
   items: { menuId: string; qty: number }[];
   pickupSlotId: string;
-  paymentMethod: PaymentMethod;
 };
 
 /** Toda operación sobre pedidos cambia stock y cupos: se refrescan los datos. */
@@ -52,6 +51,14 @@ export function useCreateOrder() {
   const client = useQueryClient();
   return useMutation({
     mutationFn: (order: NewOrder) => api<Order>('/orders', { body: order }),
+    onSettled: () => client.invalidateQueries(),
+  });
+}
+
+export function usePayOrder() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api<Order>(`/orders/${id}/pay`, { body: {} }),
     onSettled: () => client.invalidateQueries(),
   });
 }

@@ -23,7 +23,7 @@ export function lunches(count: number): string {
 
 export const orderStatus: Record<OrderStatus, string> = {
   pending_payment: 'Pendiente de pago',
-  paid: 'Pagado',
+  paid: 'Listo para retirar',
   delivered: 'Entregado',
   cancelled: 'Cancelado',
   expired: 'Expirado',

@@ -41,6 +41,8 @@ export type Order = {
   shortCode: string;
   status: OrderStatus;
   paymentMethod: PaymentMethod;
+  /** Contenido del QR; solo en el detalle de un pedido pagado. */
+  qrToken?: string | null;
   totalClp: number;
   createdAt: string;
   expiresAt: string | null;

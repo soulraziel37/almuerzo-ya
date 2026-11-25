@@ -14,7 +14,7 @@ Documento del proyecto: [docs/PROYECTO.md](docs/PROYECTO.md) · Diseño: [docs/d
 - [x] Fase 1 · Base
 - [x] Fase 2 · Design system
 - [x] Fase 3 · Estudiante
-- [ ] Fase 4 · Pagos
+- [x] Fase 4 · Pagos (simulados)
 - [ ] Fase 5 · Operador
 - [ ] Fase 6 · Entra ID
 - [ ] Fase 7 · Pulido
@@ -88,6 +88,7 @@ Opciones:
 - Las reservas cierran a las 11:30. Para probar a cualquier hora, poner
   `ENFORCE_RESERVATION_WINDOW=false` en `.env` y correr `docker compose up -d api`.
 - Un pedido sin pagar expira a los `ORDER_TTL_MINUTES` (15) y devuelve el stock.
+- El pago es simulado: "Marcar como pagado" deja el pedido pagado y muestra su QR.
 - Al instalar librerías nuevas, reiniciar el servidor de Expo.
 
 ## Tests y tipos
@@ -104,6 +105,9 @@ npm --prefix api test; npm --prefix api run typecheck; npm --prefix mobile run t
 
 ## Diferencias con el documento
 
+- Sin Apple Pay ni Webpay (§10): es un prototipo y el pago se marca con un botón. Por eso no
+  hay selección de medio de pago ni pantallas de pasarela o de resultado.
+- Un QR por pedido (§4); el canvas menciona uno por almuerzo.
 - Las rutas viven en `mobile/src/app/` (estructura actual de la plantilla de Expo).
 - `User` tiene un campo `loginId` para el ID de operador.
 - La base de datos solo se publica en `127.0.0.1`.

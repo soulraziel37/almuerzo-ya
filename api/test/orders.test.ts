@@ -3,12 +3,13 @@ import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { loadConfig } from '../src/config';
 import { atLocalTime, dateColumn } from '../src/lib/dates';
 import { createPrisma } from '../src/lib/db';
+import { hashQr, verifyQr } from '../src/lib/qr';
 import { buildServer } from '../src/server';
 import { expireOrders } from '../src/services/orders';
 import { TEST_DATABASE_URL } from './test-db';
 
 const prisma = createPrisma(TEST_DATABASE_URL);
-const config = loadConfig({ JWT_SECRET: 'secreto-de-prueba' });
+const config = loadConfig({ JWT_SECRET: 'secreto-de-prueba', QR_SECRET: 'qr-de-prueba' });
 const DATE = '2026-11-24';
 
 let clock = atLocalTime(DATE, '10:00');
@@ -169,6 +170,59 @@ describe('liberación de stock', () => {
     await cancel();
     expect((await stock()).reservedCount).toBe(0);
     expect(await booked()).toBe(0);
+  });
+});
+
+describe('pago simulado', () => {
+  const pay = (headers: { authorization: string }, id: string) =>
+    app.inject({ method: 'POST', url: `/orders/${id}/pay`, headers });
+
+  it('marca pagado, pasa la reserva a venta y entrega un QR firmado', async () => {
+    const ana = await login(ids.ana);
+    const { id, shortCode } = (await order(ana, 2)).json();
+    const res = await pay(ana, id);
+
+    expect(res.json()).toMatchObject({ status: 'paid', expiresAt: null });
+    expect(await stock()).toMatchObject({ reservedCount: 0, soldCount: 2 });
+    const { qrToken } = res.json();
+    expect(verifyQr(qrToken, config.QR_SECRET)).toEqual({ orderId: id, shortCode });
+    expect(verifyQr(qrToken, 'otro-secreto')).toBeNull();
+    expect(verifyQr(`${qrToken}x`, config.QR_SECRET)).toBeNull();
+    const saved = await prisma.order.findUniqueOrThrow({ where: { id } });
+    expect(saved.qrTokenHash).toBe(hashQr(qrToken));
+  });
+
+  it('pagar dos veces a la vez no vende doble', async () => {
+    const ana = await login(ids.ana);
+    const { id } = (await order(ana, 2)).json();
+    const results = await Promise.all([pay(ana, id), pay(ana, id)]);
+
+    expect(results.map((r) => r.statusCode)).toEqual([200, 200]);
+    expect((await stock()).soldCount).toBe(2);
+    expect(await prisma.payment.count({ where: { orderId: id } })).toBe(1);
+  });
+
+  it('un pedido pagado no expira ni se puede cancelar', async () => {
+    const ana = await login(ids.ana);
+    const { id } = (await order(ana, 1)).json();
+    await pay(ana, id);
+
+    clock = atLocalTime(DATE, '11:00');
+    expect(await expireOrders(prisma, config, clock)).toBe(0);
+    const cancel = await app.inject({ method: 'POST', url: `/orders/${id}/cancel`, headers: ana });
+    expect(cancel.json().status).toBe('paid');
+    expect((await stock()).soldCount).toBe(1);
+  });
+
+  it('no deja pagar un pedido expirado ni uno ajeno', async () => {
+    const ana = await login(ids.ana);
+    const { id } = (await order(ana, 1)).json();
+    expect((await pay(await login(ids.beto), id)).statusCode).toBe(404);
+
+    clock = atLocalTime(DATE, '10:15');
+    const res = await pay(ana, id);
+    expect(res.json().code).toBe('order_not_payable');
+    expect(await stock()).toMatchObject({ reservedCount: 0, soldCount: 0 });
   });
 });
 

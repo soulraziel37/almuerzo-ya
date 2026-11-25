@@ -5,6 +5,8 @@ const flag = z.enum(['true', 'false']).transform((value) => value === 'true');
 const envSchema = z.object({
   AUTH_MODE: z.enum(['mock', 'entra']).default('mock'),
   JWT_SECRET: z.string().min(8, 'JWT_SECRET debe tener al menos 8 caracteres'),
+  /** Firma los códigos QR de retiro. */
+  QR_SECRET: z.string().min(8, 'QR_SECRET debe tener al menos 8 caracteres'),
   /** En `false` permite reservar a cualquier hora (solo para probar el prototipo). */
   ENFORCE_RESERVATION_WINDOW: flag.default(true),
   RESERVATION_CUTOFF: z.string().regex(/^\d{2}:\d{2}$/).default('11:30'),

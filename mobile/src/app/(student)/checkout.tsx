@@ -1,10 +1,8 @@
 import { router } from 'expo-router';
-import { SymbolView } from 'expo-symbols';
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { useCreateOrder, useSlots } from '@/api/queries';
-import type { PaymentMethod } from '@/api/types';
 import { GroupedList, ListRow } from '@/components/GroupedList';
 import { Notice } from '@/components/Notice';
 import { PrimaryButton } from '@/components/PrimaryButton';
@@ -15,17 +13,11 @@ import { useCart } from '@/store/cart';
 import { useCartLines } from '@/store/useCartLines';
 import { colors, spacing, type } from '@/theme/tokens';
 
-const payments: { id: PaymentMethod; label: string; sub: string }[] = [
-  { id: 'apple_pay', label: 'Apple Pay', sub: 'Pago rápido con Face ID' },
-  { id: 'webpay', label: 'Webpay', sub: 'Débito, crédito o prepago' },
-];
-
 export default function CheckoutScreen() {
   const { lines, count, total, exceeded } = useCartLines();
   const slots = useSlots();
   const createOrder = useCreateOrder();
   const [slotId, setSlotId] = useState<string>();
-  const [payment, setPayment] = useState<PaymentMethod>('apple_pay');
 
   const slot = slots.data?.find((s) => s.id === slotId && s.available);
 
@@ -35,7 +27,6 @@ export default function CheckoutScreen() {
       {
         items: lines.map((l) => ({ menuId: l.menu.id, qty: l.qty })),
         pickupSlotId: slot.id,
-        paymentMethod: payment,
       },
       {
         onSuccess: (order) => {
@@ -71,27 +62,6 @@ export default function CheckoutScreen() {
         </Text>
       </View>
 
-      <GroupedList header="Método de pago">
-        {payments.map((option) => (
-          <ListRow
-            key={option.id}
-            title={option.label}
-            subtitle={option.sub}
-            selected={option.id === payment}
-            trailing={
-              option.id === payment ? (
-                <SymbolView
-                  name={{ ios: 'checkmark', android: 'check', web: 'check' }}
-                  size={18}
-                  tintColor={colors.accent}
-                />
-              ) : null
-            }
-            onPress={() => setPayment(option.id)}
-          />
-        ))}
-      </GroupedList>
-
       <GroupedList>
         <ListRow title="Total" trailing={<Text style={styles.total}>{clp(total)}</Text>} />
       </GroupedList>
@@ -103,7 +73,7 @@ export default function CheckoutScreen() {
         loading={createOrder.isPending}
         onPress={reserve}
       />
-      <Notice>Tu almuerzo queda reservado. El pago se habilita en la próxima fase.</Notice>
+      <Notice>Tu almuerzo queda reservado mientras confirmas el pago.</Notice>
     </Screen>
   );
 }

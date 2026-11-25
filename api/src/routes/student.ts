@@ -8,6 +8,7 @@ import {
   expireOrders,
   getOrder,
   listOrders,
+  payOrder,
   releaseOrder,
 } from '../services/orders';
 
@@ -17,7 +18,8 @@ const newOrderSchema = z.object({
     .min(1)
     .max(2),
   pickupSlotId: z.uuid(),
-  paymentMethod: z.enum(['apple_pay', 'webpay']),
+  // El pago es simulado; el campo se conserva por el modelo de datos (§5).
+  paymentMethod: z.enum(['apple_pay', 'webpay']).default('webpay'),
 });
 
 const idParams = z.object({ id: z.uuid() });
@@ -60,6 +62,13 @@ export function studentRoutes(app: FastifyInstance, { prisma, config, now }: Ser
     const { id } = idParams.parse(request.params);
     await sweep();
     return getOrder(prisma, config, userId, id);
+  });
+
+  app.post('/orders/:id/pay', async (request) => {
+    const { userId } = await student(request);
+    const { id } = idParams.parse(request.params);
+    await sweep();
+    return payOrder(prisma, config, userId, id, clock());
   });
 
   app.post('/orders/:id/cancel', async (request) => {

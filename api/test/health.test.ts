@@ -5,7 +5,10 @@ import { buildServer } from '../src/server';
 
 const deps = {
   prisma: {} as PrismaClient,
-  config: loadConfig({ JWT_SECRET: 'secreto-de-prueba' }),
+  config: loadConfig({
+    JWT_SECRET: 'secreto-de-prueba',
+    QR_SECRET: 'qr-de-prueba',
+  }),
 };
 
 describe('GET /health', () => {

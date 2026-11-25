@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { useSession } from '@/store/session';
 
@@ -16,9 +16,12 @@ export default function RootLayout() {
     void useSession.getState().hydrate();
   }, []);
 
-  // Al cambiar de usuario no puede quedar nada en caché del anterior.
+  // Al salir de una cuenta no puede quedar nada suyo en caché. No se limpia al cargar la
+  // primera sesión: borraría las consultas que las pantallas acaban de iniciar.
+  const previousUser = useRef(userId);
   useEffect(() => {
-    queryClient.clear();
+    if (previousUser.current && previousUser.current !== userId) queryClient.clear();
+    previousUser.current = userId;
   }, [userId]);
 
   if (!ready) return null;

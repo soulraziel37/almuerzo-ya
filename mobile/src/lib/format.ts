@@ -17,6 +17,12 @@ export function longDate(isoDate: string): string {
   return `${days[date.getUTCDay()]} ${date.getUTCDate()} de ${months[date.getUTCMonth()]}`;
 }
 
+/** `2026-11-24` → `Mar 24` */
+export function shortDay(isoDate: string): string {
+  const date = new Date(`${isoDate}T00:00:00Z`);
+  return `${days[date.getUTCDay()]!.slice(0, 3)} ${date.getUTCDate()}`;
+}
+
 export function lunches(count: number): string {
   return `${count} ${count === 1 ? 'almuerzo' : 'almuerzos'}`;
 }

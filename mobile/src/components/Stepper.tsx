@@ -8,6 +8,7 @@ type StepperProps = {
   onChange: (value: number) => void;
   min?: number;
   max: number;
+  step?: number;
   /** Qué se está contando; lo lee VoiceOver. */
   label: string;
 };
@@ -17,7 +18,7 @@ const icons = {
   plus: { ios: 'plus', android: 'add', web: 'add' },
 } as const;
 
-export function Stepper({ value, onChange, min = 0, max, label }: StepperProps) {
+export function Stepper({ value, onChange, min = 0, max, step = 1, label }: StepperProps) {
   const button = (icon: keyof typeof icons, action: string, next: number) => {
     const disabled = next < min || next > max;
     return (
@@ -39,11 +40,11 @@ export function Stepper({ value, onChange, min = 0, max, label }: StepperProps) 
 
   return (
     <View style={styles.container}>
-      {button('minus', 'Quitar', value - 1)}
+      {button('minus', 'Quitar', value - step)}
       <Text accessibilityLabel={`${value} ${label}`} accessibilityLiveRegion="polite" style={styles.value}>
         {value}
       </Text>
-      {button('plus', 'Agregar', value + 1)}
+      {button('plus', 'Agregar', value + step)}
     </View>
   );
 }
@@ -60,7 +61,7 @@ const styles = StyleSheet.create({
   value: {
     ...type.headline,
     color: colors.label,
-    minWidth: 28,
+    minWidth: 36,
     textAlign: 'center',
     fontVariant: ['tabular-nums'],
   },

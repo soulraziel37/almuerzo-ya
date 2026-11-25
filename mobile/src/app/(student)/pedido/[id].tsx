@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { useCancelOrder, useOrder, usePayOrder } from '@/api/queries';
+import { ConfirmButton } from '@/components/ConfirmButton';
 import { GroupedList, ListRow } from '@/components/GroupedList';
 import { Notice } from '@/components/Notice';
 import { PrimaryButton } from '@/components/PrimaryButton';
@@ -29,7 +30,6 @@ export default function OrderScreen() {
   const cancel = useCancelOrder();
   const pay = usePayOrder();
   const remaining = useCountdown(order?.expiresAt);
-  const [confirming, setConfirming] = useState(false);
 
   if (!order) {
     return (
@@ -89,12 +89,14 @@ export default function OrderScreen() {
             onPress={() => pay.mutate(order.id)}
           />
           <Notice>Prototipo: no se hace ningún cobro.</Notice>
-          <PrimaryButton
-            title={confirming ? 'Confirmar cancelación' : 'Cancelar pedido'}
-            variant="soft"
+          <ConfirmButton
+            title="Cancelar pedido"
+            question="¿Cancelar este pedido?"
+            message="Se liberan tu almuerzo y tu hora de retiro."
+            confirmLabel="Cancelar pedido"
             loading={cancel.isPending}
-            disabled={pay.isPending}
-            onPress={() => (confirming ? cancel.mutate(order.id) : setConfirming(true))}
+            isDisabled={pay.isPending}
+            onConfirm={() => cancel.mutate(order.id)}
           />
         </>
       ) : (

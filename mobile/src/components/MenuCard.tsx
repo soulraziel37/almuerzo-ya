@@ -1,6 +1,8 @@
+import { Image } from 'expo-image';
 import { SymbolView } from 'expo-symbols';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { API_URL } from '@/api/client';
 import type { Menu } from '@/api/types';
 import { Glass } from '@/components/Glass';
 import { clp } from '@/lib/format';
@@ -29,11 +31,15 @@ export function MenuCard({ menu, selected, onSelect }: MenuCardProps) {
       onPress={onSelect}
       style={[styles.card, selected && styles.selected, unavailable && styles.unavailable]}>
       <View style={styles.photo}>
-        <SymbolView
-          name={{ ios: 'fork.knife', android: 'restaurant', web: 'restaurant' }}
-          size={40}
-          tintColor={colors.accent}
-        />
+        {menu.photoUrl ? (
+          <Image source={`${API_URL}${menu.photoUrl}`} style={StyleSheet.absoluteFill} contentFit="cover" />
+        ) : (
+          <SymbolView
+            name={{ ios: 'fork.knife', android: 'restaurant', web: 'restaurant' }}
+            size={40}
+            tintColor={colors.accent}
+          />
+        )}
         {low ? (
           <View style={[styles.chip, styles.lowChip]}>
             <Text style={[styles.chipText, styles.lowText]}>{stockText(menu)}</Text>

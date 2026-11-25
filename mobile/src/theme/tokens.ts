@@ -26,6 +26,18 @@ export const glass = {
   webFilter: 'blur(20px) saturate(180%)',
 } as const;
 
+/** Pantalla de escaneo del canvas (`docs/design/Escanear.dc.html`). */
+export const scanner = {
+  bg: '#1C1C1E',
+  circles: ['#3A3A3C', '#2C3A30', '#48484A'],
+  text: '#FFFFFF',
+  secondaryText: 'rgba(255,255,255,0.8)',
+  line: '#30D158',
+  glassFill: 'rgba(255,255,255,0.14)',
+  glassBorder: 'rgba(255,255,255,0.22)',
+  glassOpaque: '#3A3A3C',
+} as const;
+
 export const type = {
   largeTitle: { fontSize: 34, lineHeight: 41, fontWeight: '700' },
   title2: { fontSize: 22, fontWeight: '700' },

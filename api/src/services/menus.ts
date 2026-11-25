@@ -28,6 +28,7 @@ export async function todayMenu(prisma: PrismaClient, config: Config, now: Date)
       isVegetarian: menu.isVegetarian,
       priceClp: menu.priceClp,
       salesOpen: menu.salesOpen,
+      photoUrl: menu.photoUrl,
       available: Math.max(0, menu.initialStock - menu.reservedCount - menu.soldCount),
     })),
   };

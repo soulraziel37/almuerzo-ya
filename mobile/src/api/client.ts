@@ -24,17 +24,19 @@ export class ApiError extends Error {
   }
 }
 
-/** Llama a la API con la sesión actual. Con `body` hace un POST. */
-export async function api<T>(path: string, options: { body?: unknown } = {}): Promise<T> {
+type ApiOptions = { body?: unknown; method?: 'PUT' | 'PATCH' };
+
+/** Llama a la API con la sesión actual. Con `body` hace un POST salvo que se indique otro método. */
+export async function api<T>(path: string, options: ApiOptions = {}): Promise<T> {
   const token = useSession.getState().session?.token;
   const post = options.body !== undefined;
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 8000);
+  const timeout = setTimeout(() => controller.abort(), post ? 30000 : 8000);
 
   let res: Response;
   try {
     res = await fetch(`${API_URL}${path}`, {
-      method: post ? 'POST' : 'GET',
+      method: options.method ?? (post ? 'POST' : 'GET'),
       headers: {
         ...(post ? { 'Content-Type': 'application/json' } : null),
         ...(token ? { Authorization: `Bearer ${token}` } : null),

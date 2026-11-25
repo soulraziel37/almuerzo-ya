@@ -15,7 +15,7 @@ Documento del proyecto: [docs/PROYECTO.md](docs/PROYECTO.md) · Diseño: [docs/d
 - [x] Fase 2 · Design system
 - [x] Fase 3 · Estudiante
 - [x] Fase 4 · Pagos (simulados)
-- [ ] Fase 5 · Operador
+- [x] Fase 5 · Operador
 - [ ] Fase 6 · Entra ID
 - [ ] Fase 7 · Pulido
 
@@ -91,6 +91,13 @@ Opciones:
 - El pago es simulado: "Marcar como pagado" deja el pedido pagado y muestra su QR.
 - Al instalar librerías nuevas, reiniciar el servidor de Expo.
 
+## Probar el flujo del operador
+
+- Ingreso: pestaña "Operador", `OP-0001` / `operador123`.
+- Escanear: la cámara lee el QR sola; "Código" permite escribirlo.
+- "Cerrar día" no se puede deshacer: detiene las ventas y expira lo no retirado.
+- Las fotos de los platos se guardan en `api/uploads/`.
+
 ## Tests y tipos
 
 Los tests de la API usan la base `almuerzo_test`: levantar antes `docker compose up -d db`.
@@ -108,6 +115,8 @@ npm --prefix api test; npm --prefix api run typecheck; npm --prefix mobile run t
 - Sin Apple Pay ni Webpay (§10): es un prototipo y el pago se marca con un botón. Por eso no
   hay selección de medio de pago ni pantallas de pasarela o de resultado.
 - Un QR por pedido (§4); el canvas menciona uno por almuerzo.
+- "Mesón 2 · Turno almuerzo" es un texto fijo del canvas: el modelo no tiene mesones.
+- "Cerrar sesión" del operador está en la pestaña Menús.
 - Las rutas viven en `mobile/src/app/` (estructura actual de la plantilla de Expo).
 - `User` tiene un campo `loginId` para el ID de operador.
 - La base de datos solo se publica en `127.0.0.1`.

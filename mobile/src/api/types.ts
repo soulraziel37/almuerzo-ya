@@ -12,6 +12,7 @@ export type Menu = {
   isVegetarian: boolean;
   priceClp: number;
   salesOpen: boolean;
+  photoUrl: string | null;
   available: number;
 };
 

@@ -6,6 +6,7 @@ import type { PrismaClient } from './generated/prisma/client';
 import { AppError } from './lib/errors';
 import { authRoutes } from './routes/auth';
 import { healthRoutes } from './routes/health';
+import { operatorRoutes } from './routes/operator';
 import { studentRoutes } from './routes/student';
 
 export interface ServerDeps {
@@ -14,12 +15,14 @@ export interface ServerDeps {
   checkDb: () => PromiseLike<unknown>;
   /** Reloj inyectable para los tests. */
   now?: () => Date;
+  /** Carpeta de las fotos de platos. */
+  uploadsDir?: string;
 }
 
 export async function buildServer(deps: ServerDeps, options: FastifyServerOptions = {}) {
   const app = Fastify(options);
   // Prototipo en red local: la vista web de Expo llama desde otro puerto.
-  await app.register(cors, { origin: true });
+  await app.register(cors, { origin: true, methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH'] });
 
   app.setErrorHandler((error: FastifyError, request, reply) => {
     if (error instanceof AppError) {
@@ -40,5 +43,6 @@ export async function buildServer(deps: ServerDeps, options: FastifyServerOption
   healthRoutes(app, deps.checkDb);
   authRoutes(app, deps);
   studentRoutes(app, deps);
+  operatorRoutes(app, deps);
   return app;
 }

@@ -19,6 +19,21 @@ export function workWeek(today: string): string[] {
   return [0, 1, 2, 3, 4].map((i) => addDays(monday, i));
 }
 
+/** Hora local (HH:mm) del casino para un instante. */
+export function localTime(at: Date): string {
+  return new Intl.DateTimeFormat('en-GB', {
+    timeZone: TIME_ZONE,
+    hourCycle: 'h23',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(at);
+}
+
+/** Valor que representa una columna `@db.Date`. */
+export function dateColumn(isoDate: string): Date {
+  return new Date(`${isoDate}T00:00:00Z`);
+}
+
 function offsetMs(at: Date): number {
   const parts = Object.fromEntries(
     new Intl.DateTimeFormat('en-US', {

@@ -36,9 +36,11 @@ type ListRowProps = {
   trailing?: ReactNode;
   /** Si se entrega, la fila es presionable y muestra el indicador de avance. */
   onPress?: () => void;
+  /** Para filas que son opciones: reemplaza el indicador de avance por el estado. */
+  selected?: boolean;
 };
 
-export function ListRow({ title, subtitle, trailing, onPress }: ListRowProps) {
+export function ListRow({ title, subtitle, trailing, onPress, selected }: ListRowProps) {
   const content = (
     <>
       <View style={styles.texts}>
@@ -46,7 +48,7 @@ export function ListRow({ title, subtitle, trailing, onPress }: ListRowProps) {
         {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
       </View>
       {trailing}
-      {onPress ? (
+      {onPress && selected === undefined ? (
         <SymbolView
           name={{ ios: 'chevron.right', android: 'chevron_right', web: 'chevron_right' }}
           size={14}
@@ -60,7 +62,8 @@ export function ListRow({ title, subtitle, trailing, onPress }: ListRowProps) {
 
   return (
     <Pressable
-      accessibilityRole="button"
+      accessibilityRole={selected === undefined ? 'button' : 'radio'}
+      accessibilityState={selected === undefined ? undefined : { checked: selected }}
       onPress={onPress}
       style={({ pressed }) => [styles.row, pressed && styles.pressed]}>
       {content}

@@ -13,7 +13,7 @@ Documento del proyecto: [docs/PROYECTO.md](docs/PROYECTO.md) · Diseño: [docs/d
 
 - [x] Fase 1 · Base
 - [x] Fase 2 · Design system
-- [ ] Fase 3 · Estudiante
+- [x] Fase 3 · Estudiante
 - [ ] Fase 4 · Pagos
 - [ ] Fase 5 · Operador
 - [ ] Fase 6 · Entra ID
@@ -82,7 +82,17 @@ Opciones:
   npm --prefix mobile install; npm --prefix mobile start
   ```
 
+## Probar el flujo del estudiante
+
+- Ingreso: "Iniciar con Microsoft" muestra los usuarios de prueba (`AUTH_MODE=mock`).
+- Las reservas cierran a las 11:30. Para probar a cualquier hora, poner
+  `ENFORCE_RESERVATION_WINDOW=false` en `.env` y correr `docker compose up -d api`.
+- Un pedido sin pagar expira a los `ORDER_TTL_MINUTES` (15) y devuelve el stock.
+- Al instalar librerías nuevas, reiniciar el servidor de Expo.
+
 ## Tests y tipos
+
+Los tests de la API usan la base `almuerzo_test`: levantar antes `docker compose up -d db`.
 
 ```powershell
 npm --prefix api install; npm --prefix api run db:generate

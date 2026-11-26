@@ -69,7 +69,7 @@ export async function verifyOrder(
 
   if (input.token) {
     const payload = verifyQr(input.token, config.QR_SECRET);
-    if (!payload) return invalid('Ese código QR no es de Almuerzo Ya o fue alterado.');
+    if (!payload) return invalid('Ese código QR no es de Reserva UM o fue alterado.');
     order = await prisma.order.findFirst({
       where: { shortCode: payload.shortCode, qrTokenHash: hashQr(input.token) },
       include,

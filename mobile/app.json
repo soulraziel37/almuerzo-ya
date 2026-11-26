@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Almuerzo Ya",
+    "name": "Reserva UM",
     "slug": "almuerzo-ya",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -37,14 +37,14 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Almuerzo Ya usa la cámara para escanear los códigos de retiro.",
+          "cameraPermission": "Reserva UM usa la cámara para escanear los códigos de retiro.",
           "recordAudioAndroid": false
         }
       ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "Almuerzo Ya usa tus fotos para ilustrar los platos."
+          "photosPermission": "Reserva UM usa tus fotos para ilustrar los platos."
         }
       ]
     ],

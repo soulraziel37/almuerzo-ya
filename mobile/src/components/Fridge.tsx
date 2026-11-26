@@ -94,7 +94,7 @@ export function Fridge({ trays, openId, large = false }: FridgeProps) {
   return (
     <View style={styles.cabinet}>
       <View style={styles.top}>
-        <Text style={styles.brand}>Almuerzo Ya</Text>
+        <Text style={styles.brand}>Reserva UM</Text>
         <View style={styles.display}>
           <View style={[styles.led, { backgroundColor: open ? fridge.open : fridge.locked }]} />
           <Text style={styles.displayText}>{open ? 'Abierta' : 'Bloqueada'}</Text>

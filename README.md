@@ -1,4 +1,4 @@
-# Almuerzo Ya
+# Reserva UM
 
 Prototipo iOS para reservar, pagar y retirar el almuerzo del casino.
 Documento del proyecto: [docs/PROYECTO.md](docs/PROYECTO.md) · Diseño: [docs/design](docs/design/LEEME.md)

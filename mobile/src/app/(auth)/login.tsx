@@ -28,7 +28,7 @@ export default function Login() {
         <BrandMark />
         <View style={styles.heroTexts}>
           <Text accessibilityRole="header" style={styles.title}>
-            Almuerzo Ya
+            Reserva UM
           </Text>
           <Text style={styles.subtitle}>
             Reserva, paga y retira tu almuerzo con un código QR. Sin filas.

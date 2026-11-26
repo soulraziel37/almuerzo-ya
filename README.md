@@ -19,6 +19,37 @@ Documento del proyecto: [docs/PROYECTO.md](docs/PROYECTO.md) · Diseño: [docs/d
 - Fase 6 · Entra ID: omitida (prototipo)
 - [x] Fase 7 · Pulido
 
+## Actualizaciones (noviembre 2026)
+
+Demo publicada: https://almuerzo-ya.onrender.com (pide una clave de demo).
+
+**Arreglos**
+
+- Tope de almuerzos por estudiante y día (`MAX_LUNCHES_PER_DAY`, 10). Se revisa con un bloqueo
+  en la base, así que dos pedidos al mismo tiempo no pueden pasarse.
+- Franjas de retiro automáticas: 6 franjas de 12:00 a 15:00, con 40 almuerzos cada una. El
+  cupo cuenta almuerzos, no pedidos.
+- Cada pedido guarda el nombre del plato, aunque después cambie el menú.
+- Los pedidos pagados y no retirados vencen y muestran un aviso claro.
+- Límites de intentos por usuario con sesión y por IP para el ingreso. Así no se bloquea a
+  toda la universidad, que comparte una misma IP.
+- Las claves de Render (`DEMO_ACCESS_CODE`, `OPERATOR_PASSWORD`) ignoran espacios y saltos de
+  línea pegados al borde. El campo de contraseña no pone mayúscula automática.
+
+**Nuevo**
+
+- Simulación del refrigerador de retiro (pestaña Refri) y "Modo tótem" a pantalla completa.
+- Rediseño: paleta verde con contraste AA en claro y oscuro, animaciones, confeti, sonidos,
+  QR ampliable y progreso del pedido.
+- Íconos nuevos y nombre nuevo: **Reserva UM**.
+- La app web funciona en el celular por la red local (usa la IP del PC para llamar a la API).
+
+**Publicación**
+
+- `render.yaml` publica la base, la API y la web en Render ([docs/PUBLICAR.md](docs/PUBLICAR.md)).
+- Publicada, la API exige una clave de demo, una clave de operador y secretos largos.
+- 53 tests de la API.
+
 ## Levantar
 
 Requiere Docker Desktop.

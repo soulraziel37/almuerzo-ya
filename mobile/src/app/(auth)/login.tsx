@@ -154,6 +154,8 @@ function OperatorLogin() {
           accessibilityLabel="Contraseña"
           placeholder="Contraseña"
           placeholderTextColor={colors.secondaryLabel}
+          autoCapitalize="none"
+          autoCorrect={false}
           secureTextEntry
           value={password}
           onChangeText={setPassword}

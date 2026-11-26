@@ -49,4 +49,10 @@ describe('clave de demo', () => {
     expect(() => loadConfig({ ...published, ...strong })).not.toThrow();
     expect(loadConfig({ ...base, DEMO_ACCESS_CODE: '' }).DEMO_ACCESS_CODE).toBeUndefined();
   });
+
+  it('ignora espacios y saltos de línea pegados al borde de la clave', async () => {
+    const app = await server({ DEMO_ACCESS_CODE: ' almuerzo-demo\n' });
+    expect((await users(app, 'almuerzo-demo')).statusCode).toBe(200);
+    expect(loadConfig({ ...base, DEMO_ACCESS_CODE: '   \n' }).DEMO_ACCESS_CODE).toBeUndefined();
+  });
 });

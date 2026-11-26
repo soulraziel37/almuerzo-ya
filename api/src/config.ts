@@ -13,7 +13,8 @@ const envSchema = z.object({
   ORDER_TTL_MINUTES: z.coerce.number().positive().default(15),
   /** Clave para entrar a la demo publicada en internet. Vacía en uso local. */
   DEMO_ACCESS_CODE: z.preprocess(
-    (value) => value || undefined,
+    // Sin espacios ni saltos de línea al borde: se cuelan al pegar la clave en el panel.
+    (value) => (typeof value === 'string' ? value.trim() : value) || undefined,
     z.string().min(8, 'DEMO_ACCESS_CODE debe tener al menos 8 caracteres').optional(),
   ),
   /** Peticiones por minuto: por usuario si hay una sesión válida, si no por IP. En una

@@ -85,7 +85,8 @@ for (const [dayIndex, date] of dates.entries()) {
 
 // Usuarios de prueba (AUTH_MODE=mock). La clave del operador por defecto es pública:
 // una API publicada debe definir OPERATOR_PASSWORD.
-const operatorPassword = process.env.OPERATOR_PASSWORD;
+// Sin espacios ni saltos de línea al borde: se cuelan al pegar la clave en el panel.
+const operatorPassword = process.env.OPERATOR_PASSWORD?.trim();
 if (process.env.RENDER && (operatorPassword?.length ?? 0) < 8) {
   throw new Error('Falta OPERATOR_PASSWORD (mínimo 8 caracteres) en la API publicada.');
 }

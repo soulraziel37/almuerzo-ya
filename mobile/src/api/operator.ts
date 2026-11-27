@@ -41,7 +41,7 @@ export type ManagedMenu = {
 
 export type Week = {
   today: string;
-  cutoff: string;
+  cutoff: string | null;
   days: { date: string; menus: ManagedMenu[] }[];
 };
 

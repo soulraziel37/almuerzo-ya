@@ -73,7 +73,10 @@ export default function WeekMenusScreen() {
       </GroupedList>
 
       <GroupedList header="Ajustes del día">
-        <ListRow title="Cierre de reservas" trailing={<Text style={styles.value}>{data.cutoff}</Text>} />
+        <ListRow
+          title="Cierre de reservas"
+          trailing={<Text style={styles.value}>{data.cutoff ?? 'Sin límite (prueba)'}</Text>}
+        />
         <ListRow title="Horario de retiro" trailing={<Text style={styles.value}>12:00 – 15:00</Text>} />
       </GroupedList>
 

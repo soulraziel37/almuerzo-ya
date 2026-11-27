@@ -31,7 +31,11 @@ export default function CartScreen() {
         <Text accessibilityRole="header" style={styles.emptyTitle}>
           Tu carrito está vacío
         </Text>
-        <Notice>{`Elige un menú antes de las ${data.cutoff} para asegurar tu almuerzo.`}</Notice>
+        <Notice>
+          {data.cutoff
+            ? `Elige un menú antes de las ${data.cutoff} para asegurar tu almuerzo.`
+            : 'Elige un menú para reservar tu almuerzo.'}
+        </Notice>
         <PrimaryButton title="Ver menú de hoy" onPress={() => router.back()} />
       </Screen>
     );

@@ -105,7 +105,7 @@ export async function weekMenus(prisma: PrismaClient, config: Config, now: Date)
   });
   return {
     today,
-    cutoff: config.RESERVATION_CUTOFF,
+    cutoff: config.ENFORCE_RESERVATION_WINDOW ? config.RESERVATION_CUTOFF : null,
     days: dates.map((date) => ({
       date,
       menus: menus.map((m) => serialize(m, today)).filter((m) => m.date === date),

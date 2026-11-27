@@ -46,7 +46,8 @@ export async function todayMenu(prisma: PrismaClient, config: Config, userId: st
   return {
     date,
     reservationsOpen: reservationsOpen(config, now),
-    cutoff: config.RESERVATION_CUTOFF,
+    // null: sin horario de cierre (modo de prueba).
+    cutoff: config.ENFORCE_RESERVATION_WINDOW ? config.RESERVATION_CUTOFF : null,
     serviceFeeClp: config.SERVICE_FEE_CLP,
     maxPerMenu: config.MAX_QTY_PER_MENU,
     maxPerDay: config.MAX_LUNCHES_PER_DAY,

@@ -28,7 +28,7 @@ export default function MenuScreen() {
   const today = (orders.data ?? []).filter((o) => data && o.pickup.date === data.date);
   const active =
     today.find((o) => o.status === 'pending_payment') ?? today.find((o) => o.status === 'paid');
-  const left = data ? untilCutoff(data.date, data.cutoff, now) : null;
+  const left = data?.cutoff ? untilCutoff(data.date, data.cutoff, now) : null;
 
   return (
     <Screen
@@ -56,7 +56,9 @@ export default function MenuScreen() {
                   ? `Las reservas cerraron a las ${data.cutoff}`
                   : left
                     ? `Reserva hasta las ${data.cutoff} · quedan ${left}`
-                    : 'Reservas abiertas'}
+                    : data.cutoff
+                      ? 'Reservas abiertas'
+                      : 'Reservas abiertas todo el día (modo de prueba)'}
               </Text>
               <Text style={styles.detail}>Retiro de 12:00 a 15:00 · Casino central</Text>
             </View>

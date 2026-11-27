@@ -21,7 +21,8 @@ export type Menu = {
 export type TodayMenu = {
   date: string;
   reservationsOpen: boolean;
-  cutoff: string;
+  /** `null` cuando la API no aplica el horario de cierre (modo de prueba). */
+  cutoff: string | null;
   serviceFeeClp: number;
   maxPerMenu: number;
   maxPerDay: number;

@@ -7,6 +7,7 @@ import { signSession } from '../src/lib/auth';
 import { atLocalTime, dateColumn } from '../src/lib/dates';
 import { createPrisma } from '../src/lib/db';
 import { buildServer } from '../src/server';
+import { reopenDay } from '../src/services/manage';
 import { TEST_DATABASE_URL } from './test-db';
 
 const prisma = createPrisma(TEST_DATABASE_URL);
@@ -242,6 +243,14 @@ describe('stock y cierre', () => {
     expect((await verify({ code: paid.shortCode })).message).toContain('no se retiró');
     expect((await verify({ code: pending.shortCode })).message).toBe('El pedido expiró.');
     expect((await patch({ salesOpen: true })).statusCode).toBe(409);
+  });
+
+  it('reabrir el día solo en modo de prueba', async () => {
+    await post('/operator/close-day');
+    expect((await post('/operator/reopen-day')).json().code).toBe('not_test_mode');
+    expect((await reopenDay(prisma, clock)).reopened).toBeGreaterThan(0);
+    const menu = await prisma.menu.findUniqueOrThrow({ where: { id: menuId } });
+    expect(menu).toMatchObject({ status: 'published', salesOpen: true });
   });
 });
 

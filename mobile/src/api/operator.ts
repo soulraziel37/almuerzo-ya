@@ -70,7 +70,8 @@ export const useFridge = () =>
 export const useStock = () =>
   useQuery({
     queryKey: ['stock'],
-    queryFn: () => api<{ date: string; menus: ManagedMenu[] }>('/operator/stock'),
+    queryFn: () =>
+      api<{ date: string; menus: ManagedMenu[]; canReopen: boolean }>('/operator/stock'),
     refetchInterval: POLL_MS,
   });
 
@@ -122,6 +123,10 @@ export const useCloseDay = () =>
   useOperatorMutation(() =>
     api<{ released: number; notPickedUp: number }>('/operator/close-day', { body: {} }),
   );
+
+/** Solo en modo de prueba. */
+export const useReopenDay = () =>
+  useOperatorMutation(() => api<{ reopened: number }>('/operator/reopen-day', { body: {} }));
 
 export const useSaveMenu = () =>
   useOperatorMutation(

@@ -1,9 +1,17 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { useCloseDay, useStock, useSummary, useUpdateStock, type ManagedMenu } from '@/api/operator';
+import {
+  useCloseDay,
+  useReopenDay,
+  useStock,
+  useSummary,
+  useUpdateStock,
+  type ManagedMenu,
+} from '@/api/operator';
 import { ConfirmButton } from '@/components/ConfirmButton';
 import { GroupedList, ListRow } from '@/components/GroupedList';
 import { Notice } from '@/components/Notice';
+import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { Stats } from '@/components/Stats';
 import { Stepper } from '@/components/Stepper';
@@ -25,11 +33,13 @@ export default function StockScreen() {
   const summary = useSummary();
   const update = useUpdateStock();
   const closeDay = useCloseDay();
+  const reopenDay = useReopenDay();
 
   const menus = stock.data?.menus ?? [];
   const open = menus.some((m) => m.state !== 'closed');
   const sold = menus.reduce((sum, m) => sum + m.sold, 0);
-  const error = stock.error ?? update.error ?? closeDay.error;
+  const error = stock.error ?? update.error ?? closeDay.error ?? reopenDay.error;
+  const canReopen = !open && menus.length > 0 && !!stock.data?.canReopen;
 
   return (
     <Screen title="Control de stock">
@@ -110,6 +120,14 @@ export default function StockScreen() {
           confirmLabel="Cerrar día"
           loading={closeDay.isPending}
           onConfirm={() => closeDay.mutate(undefined)}
+        />
+      ) : null}
+      {canReopen ? (
+        <PrimaryButton
+          title="Reabrir día (modo de prueba)"
+          variant="soft"
+          loading={reopenDay.isPending}
+          onPress={() => reopenDay.mutate(undefined, { onSuccess: () => closeDay.reset() })}
         />
       ) : null}
     </Screen>

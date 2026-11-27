@@ -9,6 +9,7 @@ import {
   closeDay,
   createMenu,
   editMenu,
+  reopenDay,
   todayStock,
   updateStock,
   weekMenus,
@@ -82,7 +83,8 @@ export function operatorRoutes(app: FastifyInstance, deps: ServerDeps) {
   app.get('/operator/stock', async (request) => {
     await operator(request);
     await sweep();
-    return todayStock(prisma, clock());
+    // Sin horario de cierre (modo de prueba) se puede reabrir un día cerrado.
+    return { ...(await todayStock(prisma, clock())), canReopen: !config.ENFORCE_RESERVATION_WINDOW };
   });
 
   app.patch('/operator/menus/:id/stock', async (request) => {
@@ -100,6 +102,14 @@ export function operatorRoutes(app: FastifyInstance, deps: ServerDeps) {
   app.post('/operator/close-day', async (request) => {
     await operator(request);
     return closeDay(prisma, clock());
+  });
+
+  app.post('/operator/reopen-day', async (request) => {
+    await operator(request);
+    if (config.ENFORCE_RESERVATION_WINDOW) {
+      throw new AppError(403, 'not_test_mode', 'Solo se puede reabrir el día en modo de prueba.');
+    }
+    return reopenDay(prisma, clock());
   });
 
   app.get('/operator/menus', async (request) => {

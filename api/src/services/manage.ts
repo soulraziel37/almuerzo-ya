@@ -96,6 +96,19 @@ export async function closeDay(prisma: PrismaClient, now: Date) {
   return { released, notPickedUp: notPickedUp.count };
 }
 
+/**
+ * Solo en modo de prueba: vuelve a abrir las ventas de hoy tras "Cerrar día". Los pedidos que
+ * expiraron al cerrar siguen expirados.
+ */
+export async function reopenDay(prisma: PrismaClient, now: Date) {
+  const date = dateColumn(localDate(now));
+  const { count } = await prisma.menu.updateMany({
+    where: { date, status: 'closed' },
+    data: { status: 'published', salesOpen: true },
+  });
+  return { reopened: count };
+}
+
 export async function weekMenus(prisma: PrismaClient, config: Config, now: Date) {
   const today = localDate(now);
   const dates = workWeek(today);
